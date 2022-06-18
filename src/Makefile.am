@@ -62,6 +62,7 @@ EXTRA_DIST+=\
 
 pkglib_LTLIBRARIES=\
 	libmatcal.la \
+	libmatlib.la \
 	$(VOID)
 
 libmatcal_la_SOURCES=\
@@ -89,6 +90,32 @@ libmatcal_la_LIBADD=\
 	$(LIBMPFR_LIBS) \
 	$(VOID)
 libmatcal_la_LDFLAGS=\
+	-rpath ${pkglibdir} \
+	-release ${PACKAGE_RELEASE} \
+	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
+	$(VOID)
+
+libmatlib_la_SOURCES=\
+	arithmetics.c \
+	$(VOID)
+libmatlib_la_CFLAGS=\
+	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
+	$(LIBGML_CFLAGS) \
+	$(LIBMPFR_CFLAGS) \
+	-DG_LOG_DOMAIN=\"MatLib\" \
+	-D__LIBMATLIB_INSIDE__=1 \
+	$(VOID)
+libmatlib_la_LIBADD=\
+	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
+	$(LIBGML_LIBS) \
+	$(LIBMPFR_LIBS) \
+	libmatcal.la \
+	$(VOID)
+libmatlib_la_LDFLAGS=\
 	-rpath ${pkglibdir} \
 	-release ${PACKAGE_RELEASE} \
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \

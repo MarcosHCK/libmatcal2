@@ -20,9 +20,8 @@
 #include <coreext.h>
 #include <numberext.h>
 
-G_GNUC_INTERNAL
 MatcalNumberKind
-_matcal_core_equalize (MatcalNumberKind kind1, MatcalNumberKind kind2)
+matcal_number_kind_equalize (MatcalNumberKind kind1, MatcalNumberKind kind2)
 {
   int kind1_ = (int) kind1;
   int kind2_ = (int) kind2;

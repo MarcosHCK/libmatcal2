@@ -43,6 +43,11 @@ struct _MatcalNumberPrivate
   };
 };
 
+/* number kind API */
+
+MatcalNumberKind
+matcal_number_kind_equalize (MatcalNumberKind kind1, MatcalNumberKind kind2);
+
 /* extended API */
 
 void
