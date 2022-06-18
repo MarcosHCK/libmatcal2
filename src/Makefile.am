@@ -69,6 +69,7 @@ libmatcal_la_SOURCES=\
 	closure.c \
 	core.c \
 	number.c \
+	numberconv.c \
 	object.c \
 	$(VOID)
 libmatcal_la_CFLAGS=\

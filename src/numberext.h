@@ -46,6 +46,8 @@ struct _MatcalNumberPrivate
 /* extended API */
 
 void
+matcal_core_pushnumber_as (MatcalCore* core, int index, MatcalNumberKind newkind);
+void
 matcal_core_pushnumber (MatcalCore* core, MatcalNumberKind kind);
 MatcalNumber*
 matcal_core_tonumber (MatcalCore* core, int index);
