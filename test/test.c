@@ -64,6 +64,53 @@ matcal_test_object_append (Fixture* fixture, gpointer shared)
   g_assert (matcal_object_nth (object3, 0) == object3);
   g_assert (matcal_object_nth (object3, 1) == object1);
   g_assert (matcal_object_nth (object3, 2) == object2);
+  g_assert (matcal_object_nth (list, 0) == object3);
+  g_assert (matcal_object_nth (list, 1) == object1);
+  g_assert (matcal_object_nth (list, 2) == object2);
+  g_assert (matcal_object_length (list) == 3);
+}
+
+
+static void
+matcal_test_object_remove (Fixture* fixture, gpointer shared)
+{
+  MatcalObject* object1 = NULL;
+  MatcalObject* object2 = NULL;
+  MatcalObject* object3 = NULL;
+  MatcalObject* list = NULL;
+  int nth = 0;
+
+  object1 = matcal_object_new (MATCAL_TYPE_NIL);
+  object2 = matcal_object_new (MATCAL_TYPE_NIL);
+  object3 = matcal_object_new (MATCAL_TYPE_NIL);
+
+  list = matcal_object_append (object1, object2);
+  list = matcal_object_prepend (object1, object3);
+  list = matcal_object_remove (object3, object1);
+
+  g_assert (matcal_object_nth (object3, 0) == object3);
+  g_assert (matcal_object_nth (object3, 1) == object2);
+  g_assert (matcal_object_nth (list, 0) == object3);
+  g_assert (matcal_object_nth (list, 1) == object2);
+  g_assert (matcal_object_length (list) == 2);
+}
+
+static void
+matcal_test_core_push (Fixture* fixture, gpointer shared)
+{
+  g_assert (matcal_core_gettop (fixture->core) == 0);
+
+  matcal_core_pushnil (fixture->core);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+
+  matcal_core_pushnil (fixture->core);
+  g_assert (matcal_core_gettop (fixture->core) == 2);
+
+  matcal_core_remove (fixture->core, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+
+  matcal_core_settop (fixture->core, 0);
+  g_assert (matcal_core_gettop (fixture->core) == 0);
 }
 
 /*
@@ -88,5 +135,7 @@ int main(int argc, char *argv[])
   } G_STMT_END
 
   test_add (GTESTROOT "/object/append", matcal_test_object_append);
+  test_add (GTESTROOT "/object/remove", matcal_test_object_remove);
+  test_add (GTESTROOT "/core/push", matcal_test_core_push);
 return g_test_run ();
 }
