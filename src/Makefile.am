@@ -49,6 +49,10 @@ EXTRA_DIST+=\
 	clonable.h \
 	coreext.h \
 	core.h \
+	libmatcal.h \
+	libmatcalext.h \
+	number.h \
+	numberext.h \
 	object.h \
 	$(VOID)
 
@@ -64,6 +68,7 @@ libmatcal_la_SOURCES=\
 	clonable.c \
 	closure.c \
 	core.c \
+	number.c \
 	object.c \
 	$(VOID)
 libmatcal_la_CFLAGS=\

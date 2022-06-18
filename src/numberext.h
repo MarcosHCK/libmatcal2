@@ -15,11 +15,43 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATCAL__
-#define __LIBMATCAL__ 1
+#ifndef __MATCAL_NUMBEREXT__
+#define __MATCAL_NUMBEREXT__ 1
+#include <number.h>
+#include <core.h>
+#include <gmp.h>
 
-#include "core.h"
-#include "number.h"
-#include "object.h"
+#if __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-#endif // __LIBMATCAL__
+typedef enum
+{
+  MATCAL_NUMBER_KIND_INTEGER,
+  MATCAL_NUMBER_KIND_RATIONAL,
+  MATCAL_NUMBER_KIND_REAL,
+} MatcalNumberKind;
+
+struct _MatcalNumberPrivate
+{
+  MatcalNumberKind kind;
+  union
+  {
+    mpz_t integer;
+    mpq_t rational;
+    mpf_t real;
+  };
+};
+
+/* extended API */
+
+void
+matcal_core_pushnumber (MatcalCore* core, MatcalNumberKind kind);
+MatcalNumber*
+matcal_core_tonumber (MatcalCore* core, int index);
+
+#if __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __MATCAL_NUMBEREXT__

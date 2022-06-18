@@ -15,11 +15,10 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATCAL__
-#define __LIBMATCAL__ 1
+#ifndef __LIBMATCALEXT__
+#define __LIBMATCALEXT__ 1
 
-#include "core.h"
-#include "number.h"
-#include "object.h"
+#include "libmatcal.h"
+#include "numberext.h"
 
-#endif // __LIBMATCAL__
+#endif // __LIBMATCALEXT__

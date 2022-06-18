@@ -113,6 +113,32 @@ matcal_test_core_push (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_gettop (fixture->core) == 0);
 }
 
+static void
+matcal_test_number_push (Fixture* fixture, gpointer shared)
+{
+  matcal_core_pushnumber_uint (fixture->core, 987);
+  matcal_core_pushnumber_uint (fixture->core, 322);
+  matcal_core_pushnumber_uint (fixture->core, 111);
+
+  g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 111);
+  g_assert (matcal_core_tonumber_uint (fixture->core, -2) == 322);
+  g_assert (matcal_core_tonumber_uint (fixture->core,  0) == 987);
+  g_assert (matcal_core_tonumber_uint (fixture->core,  1) == 322);
+  g_assert (matcal_core_tonumber_uint (fixture->core,  2) == 111);
+}
+
+static void
+matcal_test_number_pushstring (Fixture* fixture, gpointer shared)
+{
+  matcal_core_pushnumber_string (fixture->core, "987", 10);
+  g_assert (matcal_core_tonumber_uint (fixture->core,  0) == 987);
+  matcal_core_pop (fixture->core, 1);
+
+  matcal_core_pushnumber_string (fixture->core, "9.87", 10);
+  g_assert (matcal_core_tonumber_double (fixture->core,  0) == 9.87);
+  matcal_core_pop (fixture->core, 1);
+}
+
 /*
  * Main
  *
@@ -137,5 +163,7 @@ int main(int argc, char *argv[])
   test_add (GTESTROOT "/object/append", matcal_test_object_append);
   test_add (GTESTROOT "/object/remove", matcal_test_object_remove);
   test_add (GTESTROOT "/core/push", matcal_test_core_push);
+  test_add (GTESTROOT "/number/push", matcal_test_number_push);
+  test_add (GTESTROOT "/number/pushstring", matcal_test_number_pushstring);
 return g_test_run ();
 }
