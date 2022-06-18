@@ -46,6 +46,7 @@ SUBDIRS=\
 #
 
 EXTRA_DIST+=\
+	core.h \
 	object.h \
 	$(VOID)
 
@@ -58,6 +59,7 @@ pkglib_LTLIBRARIES=\
 	$(VOID)
 
 libmatcal_la_SOURCES=\
+	core.c \
 	object.c \
 	$(VOID)
 libmatcal_la_CFLAGS=\

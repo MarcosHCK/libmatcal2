@@ -109,7 +109,7 @@ G_GNUC_INTERNAL
 void
 _matcal_core_push (MatcalCore* core, gpointer object)
 {
-  g_return_if_fail (MATH_IS_OBJECT (object));
+  g_return_if_fail (MATCAL_IS_OBJECT (object));
   core->head = matcal_object_prepend (core->head, (MatcalObject*) object);
   ++core->top;
 }

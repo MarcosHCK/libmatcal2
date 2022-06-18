@@ -21,7 +21,7 @@
 
 typedef struct
 {
-  int dummy;
+  MatcalCore* core;
 } Fixture;
 
 #define GTESTROOT "/org/hck/libmatcal"
@@ -31,17 +31,40 @@ typedef struct
 static void
 fixture_set_up (Fixture* fixture, gconstpointer argument)
 {
+  fixture->core = matcal_core_new ();
 }
 
 static void
 fixture_tear_down (Fixture* fixture, gconstpointer argument)
 {
+  _g_object_unref0 (fixture->core);
 }
 
 /*
  * Tests
  *
  */
+
+static void
+matcal_test_object_append (Fixture* fixture, gpointer shared)
+{
+  MatcalObject* object1 = NULL;
+  MatcalObject* object2 = NULL;
+  MatcalObject* object3 = NULL;
+  MatcalObject* list = NULL;
+  int nth = 0;
+
+  object1 = matcal_object_new (MATCAL_TYPE_NIL);
+  object2 = matcal_object_new (MATCAL_TYPE_NIL);
+  object3 = matcal_object_new (MATCAL_TYPE_NIL);
+
+  list = matcal_object_append (object1, object2);
+  list = matcal_object_prepend (object1, object3);
+
+  g_assert (matcal_object_nth (object3, 0) == object3);
+  g_assert (matcal_object_nth (object3, 1) == object1);
+  g_assert (matcal_object_nth (object3, 2) == object2);
+}
 
 /*
  * Main
@@ -53,7 +76,7 @@ int main(int argc, char *argv[])
   g_test_init (&argc, &argv, NULL);
   gpointer shared = NULL;
 
-#define d_test_add(path,ftest) \
+#define test_add(path,ftest) \
   G_STMT_START { \
     g_test_add \
     ((path), \
@@ -64,6 +87,6 @@ int main(int argc, char *argv[])
      fixture_tear_down); \
   } G_STMT_END
 
-
+  test_add (GTESTROOT "/object/append", matcal_test_object_append);
 return g_test_run ();
 }

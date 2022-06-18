@@ -58,11 +58,13 @@ test_SOURCES=\
 
 test_CFLAGS=\
 	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
 	-I${top_builddir}/src/ \
 	$(VOID)
 
 test_LDADD=\
 	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
 	-L${top_builddir}/src/ \
 	-lmatcal \
 	$(VOID)
