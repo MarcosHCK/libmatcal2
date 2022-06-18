@@ -67,4 +67,5 @@ test_LDADD=\
 	$(GOBJECT_LIBS) \
 	-L${top_builddir}/src/ \
 	-lmatcal \
+	-lmatlib \
 	$(VOID)
