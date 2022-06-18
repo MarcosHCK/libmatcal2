@@ -18,6 +18,7 @@
 #ifndef __LIBMATCAL__
 #define __LIBMATCAL__ 1
 
-
+#include "core.h"
+#include "object.h"
 
 #endif // __LIBMATCAL__

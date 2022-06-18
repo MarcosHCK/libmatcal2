@@ -96,6 +96,9 @@ matcal_object_length (gpointer head);
 # define matcal_object_nth(obj, n) ((glib_typeof (obj)) (matcal_object_nth) (obj, n))
 #endif
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (MatcalObject, matcal_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (MatcalNil, matcal_object_unref)
+
 #if __cplusplus
 }
 #endif // __cplusplus
