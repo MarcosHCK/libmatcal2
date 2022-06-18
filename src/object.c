@@ -148,6 +148,14 @@ matcal_nil_init (MatcalNil* self)
 
 /* core API */
 
+/**
+ * matcal_object_new: (skip)
+ * @gtype: the type id of the #MatcalObject subtype to instantiate.
+ *
+ * Creates a new instance of a #MatcalObject subtype and sets its properties.
+ *
+ * Returns: (transfer full) (type Matcal.Object): a new instance of @gtype.
+ */
 gpointer
 matcal_object_new (GType gtype)
 {
@@ -155,6 +163,19 @@ matcal_object_new (GType gtype)
 return (gpointer) g_type_create_instance (gtype);
 }
 
+/**
+ * matcal_object_ref:
+ * @object: (type Matcal.Object): a #MatcalObject.
+ *
+ * Increases the reference count of @object.
+ *
+ * Since GLib 2.56, if `GLIB_VERSION_MAX_ALLOWED` is 2.56 or greater, the type
+ * of @object will be propagated to the return type (using the GCC typeof()
+ * extension), so any casting the caller needs to do on the return type must be
+ * explicit.
+ *
+ * Returns: (type Matcal.Object) (transfer none): the same @object
+ */
 gpointer
 (matcal_object_ref) (gpointer object)
 {
@@ -163,6 +184,18 @@ gpointer
 return object;
 }
 
+/**
+ * matcal_object_unref:
+ * @object: (type Matcal.Object): a #MatcalObject.
+ *
+ * Decreases the reference count of @object. When its reference count
+ * drops to 0, the object is finalized (i.e. its memory is freed).
+ *
+ * If the pointer to the #MatcalObject may be reused in future (for example, if it is
+ * an instance variable of another object), it is recommended to clear the
+ * pointer to %NULL rather than retain a dangling pointer to a potentially
+ * invalid #MatcalObject instance. Use g_clear_object() for this.
+ */
 void
 (matcal_object_unref) (gpointer object)
 {

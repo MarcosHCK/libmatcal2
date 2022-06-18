@@ -24,6 +24,7 @@
 *.Tpo
 
 libmatcal*.so*
+libmatlib*.so*
 
 Matcal-*.gir
 Matcal-*.typelib

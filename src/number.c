@@ -124,6 +124,14 @@ matcal_number_new (MatcalNumberKind kind)
 return number;
 }
 
+/**
+ * matcal_core_pushnumber_uint:
+ * @core: #MatcalNumber instance.
+ * @value: numeric value.
+ *
+ * Pushes a numberic value onto stack
+ * with value @value.
+ */
 void
 matcal_core_pushnumber_uint (MatcalCore* core, unsigned int value)
 {
@@ -134,6 +142,16 @@ matcal_core_pushnumber_uint (MatcalCore* core, unsigned int value)
   matcal_object_unref (n);
 }
 
+/**
+ * matcal_core_tonumber_uint:
+ * @core: #MatcalNumber instance.
+ * @index: which value to take from.
+ *
+ * Converts value at index @index to
+ * an unsigned int value an return it.
+ *
+ * Returns: see description.
+ */
 unsigned int
 matcal_core_tonumber_uint (MatcalCore* core, int index)
 {
@@ -169,6 +187,14 @@ matcal_core_tonumber_uint (MatcalCore* core, int index)
   }
 }
 
+/**
+ * matcal_core_pushnumber_double:
+ * @core: #MatcalNumber instance.
+ * @value: numeric value.
+ *
+ * Pushes a numberic value onto stack
+ * with value @value.
+ */
 void
 matcal_core_pushnumber_double (MatcalCore* core, double value)
 {
@@ -179,6 +205,16 @@ matcal_core_pushnumber_double (MatcalCore* core, double value)
   matcal_object_unref (n);
 }
 
+/**
+ * matcal_core_tonumber_double:
+ * @core: #MatcalNumber instance.
+ * @index: which value to take from.
+ *
+ * Converts value at index @index to
+ * an double value an return it.
+ *
+ * Returns: see description.
+ */
 double
 matcal_core_tonumber_double (MatcalCore* core, int index)
 {
@@ -198,6 +234,14 @@ matcal_core_tonumber_double (MatcalCore* core, int index)
   }
 }
 
+/**
+ * matcal_core_pushnumber_string:
+ * @core: #MatcalNumber instance.
+ * @value: numeric value.
+ *
+ * Pushes a numberic value onto stack
+ * with value @value.
+ */
 gboolean
 matcal_core_pushnumber_string (MatcalCore* core, const gchar* value, int base)
 {
@@ -300,6 +344,16 @@ matcal_core_pushnumber_string (MatcalCore* core, const gchar* value, int base)
 return TRUE;
 }
 
+/**
+ * matcal_core_tonumber_string:
+ * @core: #MatcalNumber instance.
+ * @index: which value to take from.
+ *
+ * Converts value at index @index to
+ * an string value an return it.
+ *
+ * Returns: see description.
+ */
 gchar*
 matcal_core_tonumber_string (MatcalCore* core, int index, int base)
 {
@@ -319,6 +373,15 @@ matcal_core_tonumber_string (MatcalCore* core, int index, int base)
   }
 }
 
+/**
+ * matcal_core_isnumber:
+ * @core: #MatcalCore instance.
+ * @index: index to inspect on.
+ *
+ * See return section.
+ *
+ * Returns: if @index is a number.
+ */
 gboolean
 matcal_core_isnumber (MatcalCore* core, int index)
 {
@@ -332,6 +395,13 @@ return MATCAL_IS_NUMBER (_matcal_core_peek (core, index));
  *
  */
 
+/**
+ * matcal_core_pushnumber:
+ * @core: #MatcalNumber instance.
+ * @kind: numeric value kind.
+ *
+ * Pushes a numberic value onto stack.
+ */
 void
 matcal_core_pushnumber (MatcalCore* core, MatcalNumberKind kind)
 {
@@ -341,6 +411,15 @@ matcal_core_pushnumber (MatcalCore* core, MatcalNumberKind kind)
   matcal_object_unref (n);
 }
 
+/**
+ * matcal_core_tonumber:
+ * @core: #MatcalNumber instance.
+ * @index: which value to take from.
+ *
+ * See return.
+ *
+ * Returns: (transfer none): number object at index @index.
+ */
 MatcalNumber*
 matcal_core_tonumber (MatcalCore* core, int index)
 {

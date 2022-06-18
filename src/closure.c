@@ -68,6 +68,14 @@ matcal_closure_init (MatcalClosure* self)
  *
  */
 
+/**
+ * matcal_core_pushcfunction:
+ * @core: #MatcalCore instance.
+ * @cclosure: C-style closure to call.
+ * 
+ * Pushes @cclosure on @core.
+ *
+ */
 void
 matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure)
 {
@@ -89,13 +97,24 @@ leave_n_items (MatcalCore* core, int n)
     matcal_core_remove (core, 0);
 }
 
+/**
+ * matcal_core_call:
+ * @core: #MatcalCore instance.
+ * @n_args: arguments to pass to.
+ * @n_results: total number of returned values.
+ *
+ * Performs a call onto @core. Arguments are pushed in
+ * natural order: function is pushed first, then the argument.
+ *
+ * Returns: if call was successful.
+ */
 MatcalClosureResult
-matcal_core_call (MatcalCore* core, int n_args, int n_res)
+matcal_core_call (MatcalCore* core, int n_args, int n_results)
 {
   g_return_val_if_fail (MATCAL_IS_CORE (core), MATCAL_CLOSURE_ERROR);
   g_return_val_if_fail (n_args >= 0, MATCAL_CLOSURE_ERROR);
   g_return_val_if_fail (matcal_core_gettop (core) >= (n_args + 1), MATCAL_CLOSURE_ERROR);
-  g_return_val_if_fail (n_res == MATCAL_CLOSURE_MULTIRET || n_res >= 0, MATCAL_CLOSURE_ERROR);
+  g_return_val_if_fail (n_results == MATCAL_CLOSURE_MULTIRET || n_results >= 0, MATCAL_CLOSURE_ERROR);
   MatcalClosure* closure = _matcal_core_peek (core, -n_args-1);
   g_return_val_if_fail (MATCAL_IS_CLOSURE (closure), MATCAL_CLOSURE_ERROR);
   MatcalClosureResult result;
@@ -117,12 +136,12 @@ matcal_core_call (MatcalCore* core, int n_args, int n_res)
     else
       {
         leave_n_items (core, result_);
-        if (n_res == MATCAL_CLOSURE_MULTIRET)
+        if (n_results == MATCAL_CLOSURE_MULTIRET)
           oldindex += result_;
         else
           {
-            matcal_core_settop (core, n_res);
-            oldindex += n_res;
+            matcal_core_settop (core, n_results);
+            oldindex += n_results;
           }
         result = MATCAL_CLOSURE_SUCCESS;
       } 

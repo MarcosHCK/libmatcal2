@@ -146,6 +146,14 @@ matcal_core_new ()
   g_object_new (MATCAL_TYPE_CORE, NULL);
 }
 
+/**
+ * matcal_core_gettop:
+ * @core: #MatcalCore instance.
+ * 
+ * Gets top of @core's stack.
+ * 
+ * Returns: stack top index.
+ */
 int
 matcal_core_gettop (MatcalCore* core)
 {
@@ -153,6 +161,13 @@ matcal_core_gettop (MatcalCore* core)
 return core->top;
 }
 
+/**
+ * matcal_core_settop:
+ * @core: #MatcalCore instance.
+ * @newtop: new top value.
+ * 
+ * Sets top of @core's stack.
+ */
 void
 matcal_core_settop (MatcalCore* core, int newtop)
 {
@@ -178,6 +193,14 @@ matcal_core_settop (MatcalCore* core, int newtop)
     }
 }
 
+/**
+ * matcal_core_pushvalue:
+ * @core: #MatcalCore instance.
+ * @index: value's index.
+ * 
+ * Pushes onto stack the value at
+ * index @index.
+ */
 void
 matcal_core_pushvalue (MatcalCore* core, int index)
 {
@@ -194,10 +217,17 @@ matcal_core_pushvalue (MatcalCore* core, int index)
   else
     {
       /* Push a new reference */
-      _matcal_core_push (core, object);
+_matcal_core_push(core, object);
     }
 }
 
+/**
+ * matcal_core_pop:
+ * @core: #MatcalCore instance.
+ * @n_values: number of values to pop from.
+ *
+ * Pops @n_values elements from stack.
+ */
 void
 matcal_core_pop (MatcalCore* core, int n_values)
 {
@@ -206,6 +236,13 @@ matcal_core_pop (MatcalCore* core, int n_values)
   matcal_core_settop (core, core->top - n_values);
 }
 
+/**
+ * matcal_core_remove:
+ * @core: #MatcalCore instance.
+ * @index: which index to remove at.
+ *
+ * Removes value at index @index.
+ */
 void
 matcal_core_remove (MatcalCore* core, int index)
 {
@@ -218,6 +255,13 @@ matcal_core_remove (MatcalCore* core, int index)
   --core->top;
 }
 
+/**
+ * matcal_core_insert:
+ * @core: #MatcalCore instance.
+ * @index: which index to insert at.
+ *
+ * Inserts value at top of stack onto index @index.
+ */
 void
 matcal_core_insert (MatcalCore* core, int index)
 {
@@ -235,6 +279,12 @@ matcal_core_insert (MatcalCore* core, int index)
 
 /* nil API */
 
+/**
+ * matcal_core_pushnil:
+ * @core: #MatcalCore instance.
+ * 
+ * Pushes onto stack a nil value.
+ */
 void
 matcal_core_pushnil (MatcalCore* core)
 {
@@ -244,6 +294,15 @@ matcal_core_pushnil (MatcalCore* core)
   matcal_object_unref (nil);
 }
 
+/**
+ * matcal_core_isnil:
+ * @core: #MatcalCore instance.
+ * @index: index to inspect on.
+ *
+ * See return section.
+ * 
+ * Returns: if @index is nil.
+ */
 gboolean
 matcal_core_isnil (MatcalCore* core, int index)
 {
@@ -253,6 +312,15 @@ matcal_core_isnil (MatcalCore* core, int index)
 return MATCAL_IS_NIL (value);
 }
 
+/**
+ * matcal_core_isnone:
+ * @core: #MatcalCore instance.
+ * @index: index to inspect on.
+ *
+ * See return section.
+ * 
+ * Returns: if @index don't exists.
+ */
 gboolean
 matcal_core_isnone (MatcalCore* core, int index)
 {

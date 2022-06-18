@@ -1,2 +1,11 @@
+clonable.c
+clonable.h
+closure.c
+core.c
+core.h
+number.c
+number.h
+numberconv.c
+numberext.h
 object.c
 object.h

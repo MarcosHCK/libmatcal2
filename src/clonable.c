@@ -43,6 +43,14 @@ matcal_clonable_default_init (MatcalClonableIface* iface)
  *
  */
 
+/**
+ * matcal_clonable_clone:
+ * @object: a #MatcalClonable object
+ * 
+ * Clones @object instance.
+ * 
+ * Returns: (transfer full): a cloned #MatcalClonable instance.
+ */
 gpointer
 (matcal_clonable_clone) (gpointer object)
 {

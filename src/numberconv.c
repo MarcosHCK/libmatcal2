@@ -20,6 +20,15 @@
 #include <coreext.h>
 #include <numberext.h>
 
+/**
+ * matcal_number_kind_equalize:
+ * @kind1: first kind to equalize.
+ * @kind2: second kind to equalize.
+ * 
+ * Equalizes two kinds.
+ *
+ * Returns: equalized kind.
+ */
 MatcalNumberKind
 matcal_number_kind_equalize (MatcalNumberKind kind1, MatcalNumberKind kind2)
 {
@@ -98,6 +107,14 @@ matcal_convert_f2q (MatcalCore* core, int index)
   mpq_set_f (result->priv->rational, number->priv->real);
 }
 
+/**
+ * matcal_core_pushnumber_as:
+ * @core: #MatcalCore instance.
+ * @newkind: numeric value kind to convert to.
+ * 
+ * Transforms a mnumeric value at index @index
+ * and pushes it onto stack.
+ */
 void
 matcal_core_pushnumber_as (MatcalCore* core, int index, MatcalNumberKind newkind)
 {
