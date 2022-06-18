@@ -16,6 +16,7 @@
  *
  */
 #include <config.h>
+#include <clonable.h>
 #include <core.h>
 #include <object.h>
 
@@ -230,4 +231,31 @@ matcal_core_insert (MatcalCore* core, int index)
   core->head = matcal_object_remove (core->head, object);
   core->head = matcal_object_insert (core->head, object, reverse (index));
   matcal_object_unref (object);
+}
+
+/* nil API */
+
+void
+matcal_core_pushnil (MatcalCore* core)
+{
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  MatcalNil* nil = matcal_object_new (MATCAL_TYPE_NIL);
+  _matcal_core_push (core, nil);
+  matcal_object_unref (nil);
+}
+
+gboolean
+matcal_core_isnil (MatcalCore* core, int index)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
+  g_return_val_if_fail ((index = validate_index (index)) >= 0, FALSE);
+  MatcalObject* value = _matcal_core_peek (core, index);
+return MATCAL_IS_NIL (value);
+}
+
+gboolean
+matcal_core_isnone (MatcalCore* core, int index)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
+return validate_index (index) < 0;
 }

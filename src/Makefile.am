@@ -46,6 +46,7 @@ SUBDIRS=\
 #
 
 EXTRA_DIST+=\
+	clonable.h \
 	core.h \
 	object.h \
 	$(VOID)
@@ -59,6 +60,7 @@ pkglib_LTLIBRARIES=\
 	$(VOID)
 
 libmatcal_la_SOURCES=\
+	clonable.c \
 	core.c \
 	object.c \
 	$(VOID)
