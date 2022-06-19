@@ -143,13 +143,17 @@ matcal_test_number_pushstring (Fixture* fixture, gpointer shared)
 static void
 matcal_test_number_calculate (Fixture* fixture, gpointer shared)
 {
+  matcal_core_pushcfunction (fixture->core, matlib_add);
+  matcal_core_pushnumber_uint (fixture->core, 20);
   matcal_core_pushcfunction (fixture->core, matlib_mul);
   matcal_core_pushnumber_uint (fixture->core, 10);
   matcal_core_pushnumber_uint (fixture->core, 10);
+
+  matcal_core_call (fixture->core, 2, 1);
   matcal_core_call (fixture->core, 2, 1);
 
   g_assert (matcal_core_gettop (fixture->core) == 1);
-  g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 100);
+  g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 120);
   matcal_core_pop (fixture->core, 1);
 }
 

@@ -67,7 +67,6 @@ pkglib_LTLIBRARIES=\
 
 libmatcal_la_SOURCES=\
 	clonable.c \
-	closure.c \
 	core.c \
 	number.c \
 	numberconv.c \

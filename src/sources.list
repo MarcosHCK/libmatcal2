@@ -1,6 +1,5 @@
 clonable.c
 clonable.h
-closure.c
 core.c
 core.h
 number.c

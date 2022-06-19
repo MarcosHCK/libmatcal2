@@ -28,14 +28,10 @@ extern "C" {
 #endif // __cplusplus
 
 #define validate_index(index) ((_matcal_core_checkidx)(core,(index)))
-#define switch_index(index) ((_matcal_core_switchidx)(core,(index)))
 
 G_GNUC_INTERNAL
 int
 _matcal_core_checkidx (MatcalCore* core, int index);
-G_GNUC_INTERNAL
-int
-_matcal_core_switchidx (MatcalCore* core, int index);
 G_GNUC_INTERNAL
 void
 _matcal_core_push (MatcalCore* core, gpointer object);

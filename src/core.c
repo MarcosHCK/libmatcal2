@@ -26,6 +26,17 @@
 
 typedef struct _MatcalCoreClass MatcalCoreClass;
 
+#define MATCAL_TYPE_CLOSURE (matcal_closure_get_type ())
+#define MATCAL_CLOSURE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATCAL_TYPE_CLOSURE, MatcalClosure))
+#define MATCAL_CLOSURE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATCAL_TYPE_CLOSURE, MatcalClosureClass))
+#define MATCAL_IS_CLOSURE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATCAL_TYPE_CLOSURE))
+#define MATCAL_IS_CLOSURE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATCAL_TYPE_CLOSURE))
+#define MATCAL_CLOSURE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATCAL_TYPE_CLOSURE, MatcalClosureClass))
+
+typedef struct _MatcalClosure MatcalClosure;
+typedef struct _MatcalClosurePrivate MatcalClosurePrivate;
+typedef struct _MatcalClosureClass MatcalClosureClass;
+
 struct _MatcalCore
 {
   GObject parent_instance;
@@ -38,7 +49,20 @@ struct _MatcalCoreClass
   GObjectClass parent_class;
 };
 
+struct _MatcalClosure
+{
+  MatcalObject parent_instance;
+  MatcalCFunction callback;
+};
+
+struct _MatcalClosureClass
+{
+  MatcalObjectClass parent_class;
+};
+
+
 G_DEFINE_FINAL_TYPE (MatcalCore, matcal_core, G_TYPE_OBJECT);
+G_DEFINE_FINAL_TYPE (MatcalClosure, matcal_closure, MATCAL_TYPE_OBJECT);
 
 static void
 matcal_core_class_finalize (GObject* pself)
@@ -64,6 +88,17 @@ matcal_core_init (MatcalCore* self)
 {
   self->head = NULL;
   self->top = 0;
+}
+
+static void
+matcal_closure_class_init (MatcalClosureClass* klass)
+{
+}
+
+static void
+matcal_closure_init (MatcalClosure* self)
+{
+  self->callback = NULL;
 }
 
 /* core API */
@@ -95,15 +130,6 @@ int
 _matcal_core_checkidx (MatcalCore* core, int index)
 {
   return (validate_index) (core, index); 
-}
-
-G_GNUC_INTERNAL
-int
-_matcal_core_switchidx (MatcalCore* core, int index)
-{
-  int oldidx = core->top;
-  core->top = index;
-return oldidx;
 }
 
 G_GNUC_INTERNAL
@@ -326,4 +352,80 @@ matcal_core_isnone (MatcalCore* core, int index)
 {
   g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
 return validate_index (index) < 0;
+}
+
+/**
+ * matcal_core_pushcfunction:
+ * @core: #MatcalCore instance.
+ * @cclosure: C-style closure to call.
+ * 
+ * Pushes @cclosure on @core.
+ *
+ */
+void
+matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure)
+{
+  g_return_if_fail (MATCAL_CORE (core));
+  g_return_if_fail (cclosure != NULL);
+  MatcalClosure* closure = NULL;
+
+  closure = matcal_object_new (MATCAL_TYPE_CLOSURE);
+  closure->callback = cclosure;
+  _matcal_core_push (core, closure);
+  matcal_object_unref (closure);
+}
+
+/**
+ * matcal_core_call:
+ * @core: #MatcalCore instance.
+ * @n_args: arguments to pass to.
+ * @n_results: total number of returned values.
+ *
+ * Performs a call onto @core. Arguments are pushed in
+ * natural order: function is pushed first, then the arguments.
+ *
+ * Returns: if call was successful.
+ */
+MatcalClosureResult
+matcal_core_call (MatcalCore* core, int n_args, int n_results)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), MATCAL_CLOSURE_ERROR);
+  g_return_val_if_fail (n_args >= 0, MATCAL_CLOSURE_ERROR);
+  g_return_val_if_fail (matcal_core_gettop (core) >= (n_args + 1), MATCAL_CLOSURE_ERROR);
+  g_return_val_if_fail (n_results >= 0 || n_results == MATCAL_CLOSURE_MULTIRET, MATCAL_CLOSURE_ERROR);
+  MatcalClosure* closure = _matcal_core_peek (core, -n_args-1);
+  g_return_val_if_fail (MATCAL_IS_CLOSURE (closure), MATCAL_CLOSURE_ERROR);
+  int top, oldindex, result;
+
+  oldindex = core->top - (n_args + 1);
+  core->top = n_args + 1;
+
+  matcal_object_ref (closure);
+  matcal_core_remove (core, 0);
+
+  {
+    result = closure->callback (core);
+    if (result < 0)
+      matcal_core_settop (core, 0);
+    else
+      {
+        top = matcal_core_gettop (core);
+        if (result >= top)
+          matcal_core_settop (core, result);
+        else while (top-- > result)
+          matcal_core_remove (core, 0);
+
+        if (n_results == MATCAL_CLOSURE_MULTIRET)
+          oldindex += result;
+        else
+          {
+            matcal_core_settop (core, n_results);
+            oldindex += n_results;
+          }
+      }
+  }
+
+  core->top = oldindex;
+  matcal_object_unref (closure);
+return (result < 0) ? MATCAL_CLOSURE_ERROR : MATCAL_CLOSURE_SUCCESS;
 }
