@@ -98,6 +98,19 @@ static void
 matcal_number_init (MatcalNumber* self)
 {
   self->priv = matcal_number_get_instance_private (self);
+
+  static gsize gmp_once = 0;
+  if (g_once_init_enter (&gmp_once))
+    {
+      mp_set_memory_functions
+      ((void* (*) (size_t))
+       g_malloc,
+       (void* (*) (void*, size_t, size_t))
+       g_realloc,
+       (void (*) (void*, size_t))
+       g_free);
+      g_once_init_leave (&gmp_once, TRUE);
+    }
 }
 
 /* public API */
