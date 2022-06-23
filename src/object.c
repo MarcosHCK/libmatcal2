@@ -16,7 +16,11 @@
  *
  */
 #include <config.h>
+#include <clonable.h>
 #include <object.h>
+
+static void
+matcal_nil_matcal_clonable_iface (MatcalClonableIface* iface);
 
 #define MATCAL_NIL_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATCAL_TYPE_NIL, MatcalNilClass))
 #define MATCAL_IS_NIL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATCAL_TYPE_NIL))
@@ -51,7 +55,14 @@ struct _MatcalNilClass
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, link) == G_STRUCT_OFFSET (GList, data));
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, next) == G_STRUCT_OFFSET (GList, next));
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, prev) == G_STRUCT_OFFSET (GList, prev));
-G_DEFINE_FINAL_TYPE (MatcalNil, matcal_nil, MATCAL_TYPE_OBJECT);
+
+G_DEFINE_FINAL_TYPE_WITH_CODE
+(MatcalNil,
+ matcal_nil,
+ MATCAL_TYPE_OBJECT,
+ G_IMPLEMENT_INTERFACE
+ (MATCAL_TYPE_CLONABLE,
+  matcal_nil_matcal_clonable_iface));
 
 static void
 matcal_object_class_init (MatcalObjectClass* klass);
@@ -134,6 +145,18 @@ matcal_object_init (MatcalObject* self)
   self->priv->chain.link = self;
   self->priv->chain.next = NULL;
   self->priv->chain.prev = NULL;
+}
+
+static MatcalClonable*
+matcal_nil_matcal_clonable_iface_clone (MatcalClonable* pself)
+{
+  return matcal_object_new (MATCAL_TYPE_NIL);
+}
+
+static void
+matcal_nil_matcal_clonable_iface (MatcalClonableIface* iface)
+{
+  iface->clone = matcal_nil_matcal_clonable_iface_clone;
 }
 
 static void
@@ -367,12 +390,23 @@ return (newhead) ? newhead->data : NULL;
 }
 
 gpointer
+(matcal_object_reverse) (gpointer head)
+{
+  if (head == NULL) return NULL;
+  g_return_val_if_fail (MATCAL_IS_OBJECT (head), NULL);
+  MatcalObjectPrivate* phead = ((MatcalObject*) head)->priv;
+  GList* newhead = g_list_reverse (&(phead->chain.list_));
+return (newhead) ? newhead->data : NULL;
+}
+
+gpointer
 (matcal_object_next) (gpointer head)
 {
   if (head == NULL) return NULL;
   g_return_val_if_fail (MATCAL_IS_OBJECT (head), NULL);
   MatcalObjectPrivate* phead = ((MatcalObject*) head)->priv;
-return phead->chain.next->link;
+  Chain* next = phead->chain.next;
+return (next) ? next->link : NULL;
 }
 
 gpointer
@@ -381,7 +415,8 @@ gpointer
   if (head == NULL) return NULL;
   g_return_val_if_fail (MATCAL_IS_OBJECT (head), NULL);
   MatcalObjectPrivate* phead = ((MatcalObject*) head)->priv;
-return phead->chain.prev->link;
+  Chain* prev = phead->chain.prev;
+return (prev) ? prev->link : NULL;
 }
 
 gint

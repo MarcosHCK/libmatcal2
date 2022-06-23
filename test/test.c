@@ -185,6 +185,26 @@ matcal_test_closure_push (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 21);
 }
 
+static void
+matcal_test_closure_clone (Fixture* fixture, gpointer shared)
+{
+  matcal_core_pushnumber_uint (fixture->core, 21);
+  matcal_core_pushnumber_uint (fixture->core, 12);
+  matcal_core_pushnumber_uint (fixture->core, 10);
+
+  matcal_core_pushclosure (fixture->core, testclosure, 2);
+  matcal_core_pushvalue (fixture->core, -1);
+  matcal_core_remove (fixture->core, -2);
+
+  g_assert (matcal_core_gettop (fixture->core) == 2);
+  g_assert (matcal_core_tonumber_uint (fixture->core, -2) == 21);
+  matcal_core_call (fixture->core, 0, 0);
+
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 21);
+}
+
+
 /*
  * Main
  *
@@ -213,5 +233,6 @@ int main(int argc, char *argv[])
   test_add (GTESTROOT "/number/pushstring", matcal_test_number_pushstring);
   test_add (GTESTROOT "/number/calculate", matcal_test_number_calculate);
   test_add (GTESTROOT "/closure/push", matcal_test_closure_push);
+  test_add (GTESTROOT "/closure/clone", matcal_test_closure_clone);
 return g_test_run ();
 }

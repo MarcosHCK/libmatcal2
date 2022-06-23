@@ -20,6 +20,9 @@
 #include <core.h>
 #include <object.h>
 
+static void
+matcal_closure_matcal_clonable_iface (MatcalClonableIface* iface);
+
 #define MATH_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATH_TYPE_CORE, MatcalCoreClass))
 #define MATH_IS_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATH_TYPE_CORE))
 #define MATH_CORE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATH_TYPE_CORE, MatcalCoreClass))
@@ -64,7 +67,14 @@ struct _MatcalClosureClass
 
 
 G_DEFINE_FINAL_TYPE (MatcalCore, matcal_core, G_TYPE_OBJECT);
-G_DEFINE_FINAL_TYPE (MatcalClosure, matcal_closure, MATCAL_TYPE_OBJECT);
+
+G_DEFINE_FINAL_TYPE_WITH_CODE
+(MatcalClosure,
+ matcal_closure,
+ MATCAL_TYPE_OBJECT,
+ G_IMPLEMENT_INTERFACE
+ (MATCAL_TYPE_CLONABLE,
+  matcal_closure_matcal_clonable_iface));
 
 static void
 matcal_core_class_finalize (GObject* pself)
@@ -99,6 +109,47 @@ matcal_core_init (MatcalCore* self)
 {
   self->head = NULL;
   self->top = 0;
+}
+
+static MatcalClonable*
+matcal_closure_matcal_clonable_iface_clone (MatcalClonable* pself)
+{
+  MatcalClosure* self = MATCAL_CLOSURE (pself);
+  MatcalClosure* clone = matcal_object_new (MATCAL_TYPE_CLOSURE);
+  MatcalObject* cloned = NULL;
+  MatcalObject* object = NULL;
+  MatcalObject* list = NULL;
+  guint i, n_upvalues;
+
+  clone->callback = self->callback;
+  clone->n_upvalues = self->n_upvalues;
+  n_upvalues = self->n_upvalues;
+  object = self->upvalues;
+
+  for (i = 0; i < n_upvalues; i++)
+    {
+      if (!MATCAL_IS_CLONABLE (object))
+        {
+          clone->upvalues = list;
+          matcal_object_unref (clone);
+          g_return_val_if_fail (MATCAL_IS_CLONABLE (object), NULL);
+          return NULL;
+        }
+
+      cloned = matcal_clonable_clone (object);
+      list = matcal_object_prepend (list, cloned);
+      object = matcal_object_next (object);
+    }
+
+  list = matcal_object_reverse (list);
+  clone->upvalues = list;
+return (MatcalClonable*) clone;
+}
+
+static void
+matcal_closure_matcal_clonable_iface (MatcalClonableIface* iface)
+{
+  iface->clone = matcal_closure_matcal_clonable_iface_clone;
 }
 
 static void
