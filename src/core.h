@@ -43,6 +43,8 @@ matcal_core_settop (MatcalCore* core, int newtop);
 void
 matcal_core_pushvalue (MatcalCore* core, int index);
 void
+matcal_core_pushupvalue (MatcalCore* core, int index);
+void
 matcal_core_pop (MatcalCore* core, int n_values);
 void
 matcal_core_remove (MatcalCore* core, int index);
@@ -92,6 +94,8 @@ typedef enum
 
 void
 matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure);
+void
+matcal_core_pushclosure (MatcalCore* core, MatcalCFunction cclosure, guint n_upvalues);
 MatcalClosureResult
 matcal_core_call (MatcalCore* core, int n_args, int n_results);
 

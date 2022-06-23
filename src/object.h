@@ -81,6 +81,10 @@ gpointer
 matcal_object_remove (gpointer head, gpointer link) G_GNUC_WARN_UNUSED_RESULT;
 gpointer
 matcal_object_nth (gpointer head, gint n);
+gpointer
+matcal_object_next (gpointer head);
+gpointer
+matcal_object_prev (gpointer head);
 gint
 matcal_object_length (gpointer head);
 
@@ -94,6 +98,8 @@ matcal_object_length (gpointer head);
 # define matcal_object_insert(obj,link,position) ((glib_typeof (obj)) (matcal_object_insert) (obj,link,position))
 # define matcal_object_remove(obj,link) ((glib_typeof (obj)) (matcal_object_remove) (obj,link))
 # define matcal_object_nth(obj, n) ((glib_typeof (obj)) (matcal_object_nth) (obj, n))
+# define matcal_object_next(obj) ((glib_typeof (obj)) (matcal_object_next) (obj))
+# define matcal_object_prev(obj) ((glib_typeof (obj)) (matcal_object_prev) (obj))
 #endif
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (MatcalObject, matcal_object_unref)

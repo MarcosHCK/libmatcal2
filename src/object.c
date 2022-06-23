@@ -366,6 +366,24 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+gpointer
+(matcal_object_next) (gpointer head)
+{
+  if (head == NULL) return NULL;
+  g_return_val_if_fail (MATCAL_IS_OBJECT (head), NULL);
+  MatcalObjectPrivate* phead = ((MatcalObject*) head)->priv;
+return phead->chain.next->link;
+}
+
+gpointer
+(matcal_object_prev) (gpointer head)
+{
+  if (head == NULL) return NULL;
+  g_return_val_if_fail (MATCAL_IS_OBJECT (head), NULL);
+  MatcalObjectPrivate* phead = ((MatcalObject*) head)->priv;
+return phead->chain.prev->link;
+}
+
 gint
 matcal_object_length (gpointer head)
 {

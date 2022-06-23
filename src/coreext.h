@@ -41,6 +41,9 @@ _matcal_core_pop (MatcalCore* core);
 G_GNUC_INTERNAL
 gpointer
 _matcal_core_peek (MatcalCore* core, gint index);
+G_GNUC_INTERNAL
+gpointer
+_matcal_core_peek_upvalue (MatcalCore* core, gint index);
 
 #if __cplusplus
 }

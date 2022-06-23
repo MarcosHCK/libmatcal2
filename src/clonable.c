@@ -28,8 +28,10 @@ G_DEFINE_INTERFACE (MatcalClonable, matcal_clonable, MATCAL_TYPE_OBJECT);
 static MatcalClonable*
 matcal_clonable_default_clone (MatcalClonable* clonable)
 {
-  MatcalObject* object = MATCAL_OBJECT (clonable);
-  return (MatcalClonable*) matcal_object_ref (object);
+  g_critical ("MatcalClonable::clone not implemented for '%s'", g_type_name (G_TYPE_FROM_INSTANCE (clonable)));
+#if DEVELOPER
+  g_assert_not_reached ();
+#endif // DEVELOPER
 }
 
 static void

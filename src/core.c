@@ -53,6 +53,8 @@ struct _MatcalClosure
 {
   MatcalObject parent_instance;
   MatcalCFunction callback;
+  MatcalObject* upvalues;
+  guint n_upvalues;
 };
 
 struct _MatcalClosureClass
@@ -68,6 +70,13 @@ static void
 matcal_core_class_finalize (GObject* pself)
 {
   MatcalCore* self = MATCAL_CORE (pself);
+G_OBJECT_CLASS (matcal_core_parent_class)->finalize (pself);
+}
+
+static void
+matcal_core_class_dispose (GObject* pself)
+{
+  MatcalCore* self = MATCAL_CORE (pself);
   MatcalObject* head = self->head;
   while (head != NULL)
     {
@@ -80,7 +89,9 @@ static void
 matcal_core_class_init (MatcalCoreClass* klass)
 {
   GObjectClass* oclass = G_OBJECT_CLASS (klass);
+
   oclass->finalize = matcal_core_class_finalize;
+  oclass->dispose = matcal_core_class_dispose;
 }
 
 static void
@@ -91,8 +102,22 @@ matcal_core_init (MatcalCore* self)
 }
 
 static void
+matcal_closure_class_finalize (MatcalObject* pself)
+{
+  MatcalClosure* self = MATCAL_CLOSURE (pself);
+  MatcalObject* upvalues = self->upvalues;
+  while (upvalues != NULL)
+    {
+      upvalues = matcal_object_remove (upvalues, upvalues);
+    }
+MATCAL_OBJECT_CLASS (matcal_closure_parent_class)->finalize (pself);
+}
+
+static void
 matcal_closure_class_init (MatcalClosureClass* klass)
 {
+  MatcalObjectClass* oclass = MATCAL_OBJECT_CLASS (klass);
+  oclass->finalize = matcal_closure_class_finalize;
 }
 
 static void
@@ -107,20 +132,20 @@ matcal_closure_init (MatcalClosure* self)
 # undef validate_index
 #endif // validate_index
 
-#define validate_index(index) ((validate_index)(core,index))
+#define validate_index(index) ((validate_index)(core->top,index))
 #define reverse(index) (core->top-((index))-1)
 
 static inline int
-(validate_index) (MatcalCore* core, gint index)
+(validate_index) (gint top, gint index)
 {
   if (index >= 0)
     {
-      if (core->top > index)
+      if (top > index)
         return index;
     }
   else
     {
-      return core->top + index;
+      return top + index;
     }
 return -1;
 }
@@ -129,7 +154,7 @@ G_GNUC_INTERNAL
 int
 _matcal_core_checkidx (MatcalCore* core, int index)
 {
-  return (validate_index) (core, index); 
+  return validate_index (index);
 }
 
 G_GNUC_INTERNAL
@@ -161,6 +186,34 @@ return object;
 #else
 return math_object_nth (core->head, reverse (index));
 #endif // DEBUG
+}
+
+G_GNUC_INTERNAL
+gpointer
+_matcal_core_peek_upvalue (MatcalCore* core, gint index)
+{
+  MatcalObject* base = NULL;
+
+  if (core->top == 0)
+    {
+      if (core->head == NULL)
+        {
+          _matcal_core_peek (core, 0);
+          return NULL;
+        }
+
+      base = core->head;
+    }
+  else
+    {
+      base = _matcal_core_peek (core, 0);
+      base = matcal_object_next (base);
+    }
+
+  g_return_val_if_fail (MATCAL_IS_CLOSURE (base), NULL);
+  MatcalClosure* closure = (MatcalClosure*) base;
+  g_return_val_if_fail ((index = (validate_index) (closure->n_upvalues, index)) >= 0, NULL);
+return matcal_object_nth (closure->upvalues, index);
 }
 
 /* public API */
@@ -235,16 +288,33 @@ matcal_core_pushvalue (MatcalCore* core, int index)
   MatcalObject* object = NULL;
 
   object = _matcal_core_peek (core, index);
-  if (MATCAL_IS_CLONABLE (object))
-    {
-      object = matcal_clonable_clone (object);
-      _matcal_core_push (core, object);
-    }
-  else
-    {
-      /* Push a new reference */
-_matcal_core_push(core, object);
-    }
+  g_return_if_fail (MATCAL_IS_CLONABLE (object));
+
+  object = matcal_clonable_clone (object);
+  _matcal_core_push (core, object);
+}
+
+/**
+ * matcal_core_pushupvalue:
+ * @core: #MatcalCore instance.
+ * @index: upvalue's index.
+ *
+ * Pushes onto stack the upvalue at
+ * index @index. This only works inside
+ * a closure function.
+ */
+void
+matcal_core_pushupvalue (MatcalCore* core, int index)
+{
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  MatcalObject* object = NULL;
+
+  if ((object = _matcal_core_peek_upvalue (core, index)) == NULL)
+    return;
+
+  g_return_if_fail (MATCAL_IS_CLONABLE (object));
+  object = matcal_clonable_clone (object);
+  _matcal_core_push (core, object);
 }
 
 /**
@@ -376,6 +446,47 @@ matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure)
 }
 
 /**
+ * matcal_core_pushclosure:
+ * @core: #MatcalCore instance.
+ * @cclosure: C-style closure to call.
+ * @n_upvalues: closure values taken from stack.
+ *
+ * Similar in function to @matcal_core_pushcfunction but
+ * it also takes @n_upvalues elements from stack at stores
+ * them as closure upvalues (pops it from stack).
+ *
+ */
+void
+matcal_core_pushclosure (MatcalCore* core, MatcalCFunction cclosure, guint n_upvalues)
+{
+  g_return_if_fail (MATCAL_CORE (core));
+  g_return_if_fail (cclosure != NULL);
+  g_return_if_fail (matcal_core_gettop (core) >= n_upvalues);
+  MatcalClosure* closure = NULL;
+  MatcalObject* object = NULL;
+  MatcalObject* list = NULL;
+  guint i;
+
+  closure = matcal_object_new (MATCAL_TYPE_CLOSURE);
+  closure->callback = cclosure;
+
+  for (i = 0; i < n_upvalues; i++)
+    {
+      object = _matcal_core_peek (core, -1);
+      object = matcal_object_ref (object);
+      _matcal_core_pop (core);
+
+      list = matcal_object_prepend (list, object);
+    }
+
+  closure->n_upvalues = n_upvalues;
+  closure->upvalues = list;
+
+  _matcal_core_push (core, closure);
+  matcal_object_unref (closure);
+}
+
+/**
  * matcal_core_call:
  * @core: #MatcalCore instance.
  * @n_args: arguments to pass to.
@@ -398,13 +509,14 @@ matcal_core_call (MatcalCore* core, int n_args, int n_results)
   int top, oldindex, result;
 
   oldindex = core->top - (n_args + 1);
-  core->top = n_args + 1;
-
-  matcal_object_ref (closure);
-  matcal_core_remove (core, 0);
+  core->top = n_args;
 
   {
     result = closure->callback (core);
+
+    ++core->top;
+    matcal_core_remove (core, 0);
+
     if (result < 0)
       matcal_core_settop (core, 0);
     else
@@ -426,6 +538,5 @@ matcal_core_call (MatcalCore* core, int n_args, int n_results)
   }
 
   core->top = oldindex;
-  matcal_object_unref (closure);
 return (result < 0) ? MATCAL_CLOSURE_ERROR : MATCAL_CLOSURE_SUCCESS;
 }
