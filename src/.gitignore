@@ -25,6 +25,7 @@
 
 libmatcal*.so*
 libmatlib*.so*
+libmatree*.so*
 
 *.gir
 *.typelib

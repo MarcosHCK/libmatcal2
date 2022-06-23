@@ -47,13 +47,17 @@ SUBDIRS=\
 #
 
 EXTRA_DIST+=\
+	arithmetics.h \
 	coreext.h \
 	core.h \
 	libmatcal.h \
 	libmatcalext.h \
+	libmatlib.h \
+	libmatree.h \
 	number.h \
 	numberext.h \
 	object.h \
+	tokenizer.h \
 	$(VOID)
 
 #
@@ -63,6 +67,7 @@ EXTRA_DIST+=\
 pkglib_LTLIBRARIES=\
 	libmatcal.la \
 	libmatlib.la \
+	libmatree.la \
 	$(VOID)
 
 libmatcal_la_SOURCES=\
@@ -77,7 +82,7 @@ libmatcal_la_CFLAGS=\
 	$(GOBJECT_CFLAGS) \
 	$(LIBGML_CFLAGS) \
 	$(LIBMPFR_CFLAGS) \
-	-DG_LOG_DOMAIN=\"MatCal\" \
+	-DG_LOG_DOMAIN=\"Matcal\" \
 	-D__LIBMATCAL_INSIDE__=1 \
 	$(VOID)
 libmatcal_la_LIBADD=\
@@ -102,7 +107,7 @@ libmatlib_la_CFLAGS=\
 	$(GOBJECT_CFLAGS) \
 	$(LIBGML_CFLAGS) \
 	$(LIBMPFR_CFLAGS) \
-	-DG_LOG_DOMAIN=\"MatLib\" \
+	-DG_LOG_DOMAIN=\"Matlib\" \
 	-D__LIBMATLIB_INSIDE__=1 \
 	$(VOID)
 libmatlib_la_LIBADD=\
@@ -114,6 +119,27 @@ libmatlib_la_LIBADD=\
 	libmatcal.la \
 	$(VOID)
 libmatlib_la_LDFLAGS=\
+	-rpath ${pkglibdir} \
+	-release ${PACKAGE_RELEASE} \
+	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
+	$(VOID)
+
+libmatree_la_SOURCES=\
+	tokenizer.c \
+	$(VOID)
+libmatree_la_CFLAGS=\
+	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
+	-DG_LOG_DOMAIN=\"Matree\" \
+	-D__LIBMATREE_INSIDE__=1 \
+	$(VOID)
+libmatree_la_LIBADD=\
+	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
+	$(VOID)
+libmatree_la_LDFLAGS=\
 	-rpath ${pkglibdir} \
 	-release ${PACKAGE_RELEASE} \
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
@@ -172,9 +198,27 @@ Matlib-${GIR_VERSION}.gir: matlib.list ${top_srcdir}/src/libmatlib.la
 		--filelist $< --output $@ \
 		$(VOID)
 
+Matree-${GIR_VERSION}.gir: matree.list ${top_srcdir}/src/libmatree.la
+	${INTROSPECTION_SCANNER} \
+		--nsversion "${GIR_VERSION}" \
+		--library "${top_srcdir}/src/libmatree.la" \
+		--warn-all \
+		--namespace "Matree" \
+		--cflags-begin \
+			-I${top_srcdir}/src/ \
+		--cflags-end \
+		--libtool "$(LIBTOOL)" \
+		--sources-top-dirs=${top_srcdir} \
+		--include-first-in-src="config.h" \
+		$(addprefix --include , ${GIR_INCLUDES}) \
+		--include-uninstalled="Matcal-${GIR_VERSION}.gir" \
+		--filelist $< --output $@ \
+		$(VOID)
+
 gir_DATA=\
 	Matcal-${GIR_VERSION}.gir \
 	Matlib-${GIR_VERSION}.gir \
+	Matree-${GIR_VERSION}.gir \
 	$(VOID)
 
 typelib_DATA=\
