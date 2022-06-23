@@ -68,4 +68,5 @@ test_LDADD=\
 	-L${top_builddir}/src/ \
 	-lmatcal \
 	-lmatlib \
+	-lmatree \
 	$(VOID)

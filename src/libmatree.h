@@ -18,6 +18,7 @@
 #ifndef __LIBMATREE__
 #define __LIBMATREE__ 1
 
-#include <tokenizer.h>
+#include "expression.h"
+#include "tokens.h"
 
 #endif // __LIBMATREE__

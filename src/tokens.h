@@ -15,27 +15,30 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __MATREE_TOKENIZER__
-#define __MATREE_TOKENIZER__ 1
+#ifndef __MATREE_TOKENS__
+#define __MATREE_TOKENS__ 1
 #include <glib-object.h>
 
-#define MATREE_TYPE_TOKENIZER (matree_tokenizer_get_type ())
-#define MATREE_TOKENIZER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATREE_TYPE_TOKENIZER, MatreeTokenizer))
-#define MATREE_IS_TOKENIZER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATREE_TYPE_TOKENIZER))
-
-typedef struct _MatreeTokenizer MatreeTokenizer;
+#define MATREE_TYPE_TOKENS (matree_tokens_get_type ())
+#define MATREE_TOKENS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATREE_TYPE_TOKENS, MatreeTokens))
+#define MATREE_IS_TOKENS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATREE_TYPE_TOKENS))
+typedef struct _MatreeTokens MatreeTokens;
 
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 GType
-matree_tokenizer_get_type (void) G_GNUC_CONST;
-MatreeTokenizer*
-matree_tokenizer_new ();
+matree_tokens_get_type (void) G_GNUC_CONST;
+MatreeTokens*
+matree_tokens_get_default (void) G_GNUC_CONST;
+gboolean
+matree_tokens_add (MatreeTokens* tokens, const gchar* token, GError** error);
+gchar**
+matree_tokens_split (MatreeTokens* tokens, const gchar* input, gssize length, GError** error);
 
 #if __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __MATREE_TOKENIZER__
+#endif // __MATREE_TOKENS__

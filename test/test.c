@@ -18,6 +18,7 @@
 #include <config.h>
 #include <libmatcal.h>
 #include <libmatlib.h>
+#include <libmatree.h>
 #include <glib.h>
 
 typedef struct
@@ -204,6 +205,33 @@ matcal_test_closure_clone (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 21);
 }
 
+static void
+matcal_test_expression_parse (Fixture* fixture, gpointer shared)
+{
+  MatreeExpression* exp = NULL;
+  MatreeTokens* tokens = NULL;
+  GError* tmp_err = NULL;
+
+  tokens = matree_tokens_get_default ();
+
+  matree_tokens_add (tokens, "sin", &tmp_err);
+  g_assert_no_error (tmp_err);
+
+  matree_tokens_add (tokens, "cos", &tmp_err);
+  g_assert_no_error (tmp_err);
+  
+  matree_tokens_add (tokens, "lg[0-9]+", &tmp_err);
+  g_assert_no_error (tmp_err);
+
+  matree_tokens_add (tokens, "[a-zA-Z]", &tmp_err);
+  g_assert_no_error (tmp_err);
+
+  exp = matree_expression_new ("43+5*20y/5+sin(x)^y+(xsin(y))+54cos(lg4(32x))*sincos6", &tmp_err);
+  g_assert_no_error (tmp_err);
+
+  _g_object_unref0 (tokens);
+  _g_object_unref0 (exp);
+}
 
 /*
  * Main
@@ -234,5 +262,6 @@ int main(int argc, char *argv[])
   test_add (GTESTROOT "/number/calculate", matcal_test_number_calculate);
   test_add (GTESTROOT "/closure/push", matcal_test_closure_push);
   test_add (GTESTROOT "/closure/clone", matcal_test_closure_clone);
+  test_add (GTESTROOT "/expression/parse", matcal_test_expression_parse);
 return g_test_run ();
 }

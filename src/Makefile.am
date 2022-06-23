@@ -50,6 +50,7 @@ EXTRA_DIST+=\
 	arithmetics.h \
 	coreext.h \
 	core.h \
+	expression.h \
 	libmatcal.h \
 	libmatcalext.h \
 	libmatlib.h \
@@ -57,7 +58,7 @@ EXTRA_DIST+=\
 	number.h \
 	numberext.h \
 	object.h \
-	tokenizer.h \
+	tokens.h \
 	$(VOID)
 
 #
@@ -125,7 +126,8 @@ libmatlib_la_LDFLAGS=\
 	$(VOID)
 
 libmatree_la_SOURCES=\
-	tokenizer.c \
+	expression.c \
+	tokens.c \
 	$(VOID)
 libmatree_la_CFLAGS=\
 	$(GIO_CFLAGS) \
