@@ -478,8 +478,8 @@ return validate_index (index) < 0;
 /**
  * matcal_core_pushcfunction:
  * @core: #MatcalCore instance.
- * @cclosure: C-style closure to call.
- * 
+ * @cclosure: (scope call): C-style closure to call.
+ *
  * Pushes @cclosure on @core.
  *
  */
@@ -499,7 +499,7 @@ matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure)
 /**
  * matcal_core_pushclosure:
  * @core: #MatcalCore instance.
- * @cclosure: C-style closure to call.
+ * @cclosure: (scope call): C-style closure to call.
  * @n_upvalues: closure values taken from stack.
  *
  * Similar in function to @matcal_core_pushcfunction but

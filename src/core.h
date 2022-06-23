@@ -76,7 +76,7 @@ matcal_core_tonumber_string (MatcalCore* core, int index, int base);
 gboolean
 matcal_core_isnumber (MatcalCore* core, int index);
 
-#define math_core_isnoneornil(core,index) \
+#define matcal_core_isnoneornil(core,index) \
   (matcal_core_isnone ((core),(index))\
   ||matcal_core_isnil ((core),(index)))
 

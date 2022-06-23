@@ -16,6 +16,7 @@
  *
  */
 #include <config.h>
+#include <arithmetics.h>
 #include <libmatcalext.h>
 
 int

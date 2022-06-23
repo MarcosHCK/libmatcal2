@@ -15,9 +15,25 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATLIB__
-#define __LIBMATLIB__ 1
+#ifndef __MATLIB_ARITHMETICS__
+#define __MATLIB_ARITHMETICS__ 1
+#include <libmatcal.h>
 
-#include <arithmetics.h>
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-#endif // __LIBMATLIB__
+int
+matlib_add (MatcalCore* core);
+int
+matlib_sub (MatcalCore* core);
+int
+matlib_mul (MatcalCore* core);
+int
+matlib_div (MatcalCore* core);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __MATLIB_ARITHMETICS__

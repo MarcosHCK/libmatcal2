@@ -300,6 +300,15 @@ return list;
 
 /* queue API */
 
+/**
+ * matcal_object_append: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ * @link: (type Matcal.Object): object to append to @head.
+ *
+ * Appends @link to a list pointed by @head.
+ *
+ * Returns: (type Matcal.Object): (transfer none): list pointer.
+ */
 gpointer
 (matcal_object_append) (gpointer head, gpointer link)
 {
@@ -320,6 +329,15 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_prepend: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ * @link: (type Matcal.Object): object to prepend to @head.
+ *
+ * Prepends @link to a list pointed by @head.
+ *
+ * Returns: (type Matcal.Object): (transfer none): list pointer.
+ */
 gpointer
 (matcal_object_prepend) (gpointer head, gpointer link)
 {
@@ -340,6 +358,17 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_insert: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ * @link: (type Matcal.Object): object to insert onto @head.
+ * @position: where to insert @link.
+ *
+ * Inserts @link to a list pointed by @head
+ * at @position.
+ *
+ * Returns: (type Matcal.Object): (transfer none): list pointer.
+ */
 gpointer
 (matcal_object_insert) (gpointer head, gpointer link, gint position)
 {
@@ -361,6 +390,15 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_remove: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ * @link: (type Matcal.Object): object to remove from @head.
+ *
+ * Removes @link to a list pointed by @head.
+ *
+ * Returns: (type Matcal.Object): (transfer none): list pointer.
+ */
 gpointer
 (matcal_object_remove) (gpointer head, gpointer link)
 {
@@ -379,6 +417,15 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_nth: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ * @n: position to lookup.
+ *
+ * See return.
+ *
+ * Returns: (type Matcal.Object): (transfer none): object  at position @n.
+ */
 gpointer
 (matcal_object_nth) (gpointer head, gint n)
 {
@@ -389,6 +436,14 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_reverse: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ *
+ * Reverses list pointed by @head.
+ *
+ * Returns: (type Matcal.Object): (transfer none): list pointer.
+ */
 gpointer
 (matcal_object_reverse) (gpointer head)
 {
@@ -399,6 +454,14 @@ gpointer
 return (newhead) ? newhead->data : NULL;
 }
 
+/**
+ * matcal_object_next: (skip)
+ * @link: (type Matcal.Object): a #MatcalObject instance.
+ *
+ * See return.
+ *
+ * Returns: (type Matcal.Object): (transfer none): next element to @link.
+ */
 gpointer
 (matcal_object_next) (gpointer head)
 {
@@ -409,6 +472,14 @@ gpointer
 return (next) ? next->link : NULL;
 }
 
+/**
+ * matcal_object_prev: (skip)
+ * @link: (type Matcal.Object): a #MatcalObject instance.
+ *
+ * See return.
+ *
+ * Returns: (type Matcal.Object): (transfer none): previus element to @link.
+ */
 gpointer
 (matcal_object_prev) (gpointer head)
 {
@@ -419,6 +490,14 @@ gpointer
 return (prev) ? prev->link : NULL;
 }
 
+/**
+ * matcal_object_length: (skip)
+ * @head: (type Matcal.Object): head of objects list.
+ *
+ * Calculates list length.
+ *
+ * Returns: list length.
+ */
 gint
 matcal_object_length (gpointer head)
 {

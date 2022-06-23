@@ -54,6 +54,12 @@ struct _MatcalObject
   MatcalObjectPrivate* priv;
 };
 
+/**
+ * MatcalObjectClass:
+ * @parent: parent class type.
+ * @finalize: instance finalization function.
+ *
+ */
 struct _MatcalObjectClass
 {
   GTypeClass parent;
@@ -84,9 +90,9 @@ matcal_object_nth (gpointer head, gint n);
 gpointer
 matcal_object_reverse (gpointer head);
 gpointer
-matcal_object_next (gpointer head);
+matcal_object_next (gpointer link);
 gpointer
-matcal_object_prev (gpointer head);
+matcal_object_prev (gpointer link);
 gint
 matcal_object_length (gpointer head);
 

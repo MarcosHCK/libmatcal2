@@ -18,6 +18,7 @@
 # Keep sync with
 # - src/Makefile.am
 girdir=${pkgdatadir}/gir/
+typelibdir=${girdir}
 
 #
 # Some variables
@@ -127,16 +128,6 @@ libmatlib_la_LDFLAGS=\
 include $(INTROSPECTION_MAKEFILE)
 
 GIR_VERSION=${PACKAGE_VERSION_MAYOR}.${PACKAGE_VERSION_MINOR}
-GIR_NAMESPACE=Matcal
-
-SUFFIXES=.typelib .gir
-
-.gir.typelib:
-	${INTROSPECTION_COMPILER} --output $@ $<
-
-GIR_FILENAME=\
-	${GIR_NAMESPACE}-${GIR_VERSION}.gir
-	$(VOID)
 
 GIR_INCLUDES=\
 	Gio-2.0 \
@@ -145,25 +136,53 @@ GIR_INCLUDES=\
 	GL-1.0 \
 	$(VOID)
 
-${GIR_FILENAME}: sources.list ${pkglib_LTLIBRARIES}
+SUFFIXES=.typelib .gir
+
+.gir.typelib:
+	${INTROSPECTION_COMPILER} --output $@ $<
+
+Matcal-${GIR_VERSION}.gir: matcal.list ${pkglib_LTLIBRARIES}
 	${INTROSPECTION_SCANNER} \
-		--output $@ \
 		--nsversion "${GIR_VERSION}" \
 		--library "${top_srcdir}/src/libmatcal.la" \
 		--warn-all \
-		--namespace ${GIR_NAMESPACE} \
+		--namespace "Matcal" \
 		--cflags-begin \
 			-I${top_srcdir}/src/ \
-			-I${top_srcdir}/src/jit/ \
 		--cflags-end \
 		--libtool "$(LIBTOOL)" \
 		--sources-top-dirs=${top_srcdir} \
 		--include-first-in-src="config.h" \
 		$(addprefix --include , ${GIR_INCLUDES}) \
-		--filelist $< \
+		--filelist $< --output $@ \
+		$(VOID)
+
+Matlib-${GIR_VERSION}.gir: matlib.list ${pkglib_LTLIBRARIES}
+	${INTROSPECTION_SCANNER} \
+		--nsversion "${GIR_VERSION}" \
+		--library "${top_srcdir}/src/libmatlib.la" \
+		--warn-all \
+		--namespace "Matlib" \
+		--cflags-begin \
+			-I${top_srcdir}/src/ \
+		--cflags-end \
+		--libtool "$(LIBTOOL)" \
+		--sources-top-dirs=${top_srcdir} \
+		--include-first-in-src="config.h" \
+		$(addprefix --include , ${GIR_INCLUDES}) \
+		--include-uninstalled="Matcal-${GIR_VERSION}.gir" \
+		--filelist $< --output $@ \
 		$(VOID)
 
 gir_DATA=\
-	${GIR_FILENAME} \
-	$(GIR_FILENAME:.gir=.typelib) \
+	Matcal-${GIR_VERSION}.gir \
+	Matlib-${GIR_VERSION}.gir \
+	$(VOID)
+
+typelib_DATA=\
+	$(VOID)
+
+CLEANFILES=\
+	$(gir_DATA) \
+	$(typelib_DATA) \
 	$(VOID)

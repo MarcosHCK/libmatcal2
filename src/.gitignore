@@ -26,6 +26,6 @@
 libmatcal*.so*
 libmatlib*.so*
 
-Matcal-*.gir
-Matcal-*.typelib
+*.gir
+*.typelib
 .dirstamp
