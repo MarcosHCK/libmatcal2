@@ -32,11 +32,20 @@ typedef enum
   MATCAL_NUMBER_KIND_REAL,
 } MatcalNumberKind;
 
+/**
+ * MatcalNumberPrivate:
+ * @kind: current respresentation.
+ * @integer: (skip): GMP integer numeric type.
+ * @rational: (skip): GMP rational numeric type.
+ * @real: (skip): GMP floating-point numeric type.
+ */
 struct _MatcalNumberPrivate
 {
   MatcalNumberKind kind;
+
   union
   {
+    
     mpz_t integer;
     mpq_t rational;
     mpf_t real;

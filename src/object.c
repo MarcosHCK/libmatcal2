@@ -234,7 +234,7 @@ void
  * Clones @object, this is, creates a new instance
  * of #MatcalObject with the same internal state.
  * 
- * Returns: (type Matcal.Object): (transfer full): a clone of @object.
+ * Returns: (type Matcal.Object) (transfer full): a clone of @object.
  */
 gpointer
 (matcal_object_clone) (gpointer object)
@@ -320,7 +320,7 @@ return list;
  *
  * Appends @link to a list pointed by @head.
  *
- * Returns: (type Matcal.Object): (transfer none): list pointer.
+ * Returns: (type Matcal.Object) (transfer none): list pointer.
  */
 gpointer
 (matcal_object_append) (gpointer head, gpointer link)
@@ -349,7 +349,7 @@ return (newhead) ? newhead->data : NULL;
  *
  * Prepends @link to a list pointed by @head.
  *
- * Returns: (type Matcal.Object): (transfer none): list pointer.
+ * Returns: (type Matcal.Object) (transfer none): list pointer.
  */
 gpointer
 (matcal_object_prepend) (gpointer head, gpointer link)
@@ -380,7 +380,7 @@ return (newhead) ? newhead->data : NULL;
  * Inserts @link to a list pointed by @head
  * at @position.
  *
- * Returns: (type Matcal.Object): (transfer none): list pointer.
+ * Returns: (type Matcal.Object) (transfer none): list pointer.
  */
 gpointer
 (matcal_object_insert) (gpointer head, gpointer link, gint position)
@@ -410,7 +410,7 @@ return (newhead) ? newhead->data : NULL;
  *
  * Removes @link to a list pointed by @head.
  *
- * Returns: (type Matcal.Object): (transfer none): list pointer.
+ * Returns: (type Matcal.Object) (transfer none): list pointer.
  */
 gpointer
 (matcal_object_remove) (gpointer head, gpointer link)
@@ -437,7 +437,7 @@ return (newhead) ? newhead->data : NULL;
  *
  * See return.
  *
- * Returns: (type Matcal.Object): (transfer none): object  at position @n.
+ * Returns: (type Matcal.Object) (transfer none): object  at position @n.
  */
 gpointer
 (matcal_object_nth) (gpointer head, gint n)
@@ -455,7 +455,7 @@ return (newhead) ? newhead->data : NULL;
  *
  * Reverses list pointed by @head.
  *
- * Returns: (type Matcal.Object): (transfer none): list pointer.
+ * Returns: (type Matcal.Object) (transfer none): list pointer.
  */
 gpointer
 (matcal_object_reverse) (gpointer head)
@@ -473,7 +473,7 @@ return (newhead) ? newhead->data : NULL;
  *
  * See return.
  *
- * Returns: (type Matcal.Object): (transfer none): next element to @link.
+ * Returns: (type Matcal.Object) (transfer none): next element to @link.
  */
 gpointer
 (matcal_object_next) (gpointer head)
@@ -491,7 +491,7 @@ return (next) ? next->link : NULL;
  *
  * See return.
  *
- * Returns: (type Matcal.Object): (transfer none): previus element to @link.
+ * Returns: (type Matcal.Object) (transfer none): previus element to @link.
  */
 gpointer
 (matcal_object_prev) (gpointer head)
