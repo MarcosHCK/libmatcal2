@@ -139,7 +139,7 @@ SUFFIXES=.typelib .gir
 .gir.typelib:
 	${INTROSPECTION_COMPILER} --output $@ $<
 
-Matcal-${GIR_VERSION}.gir: matcal.list ${pkglib_LTLIBRARIES}
+Matcal-${GIR_VERSION}.gir: matcal.list ${top_srcdir}/src/libmatcal.la
 	${INTROSPECTION_SCANNER} \
 		--nsversion "${GIR_VERSION}" \
 		--library "${top_srcdir}/src/libmatcal.la" \
@@ -155,7 +155,7 @@ Matcal-${GIR_VERSION}.gir: matcal.list ${pkglib_LTLIBRARIES}
 		--filelist $< --output $@ \
 		$(VOID)
 
-Matlib-${GIR_VERSION}.gir: matlib.list ${pkglib_LTLIBRARIES}
+Matlib-${GIR_VERSION}.gir: matlib.list ${top_srcdir}/src/libmatlib.la
 	${INTROSPECTION_SCANNER} \
 		--nsversion "${GIR_VERSION}" \
 		--library "${top_srcdir}/src/libmatlib.la" \
@@ -178,6 +178,7 @@ gir_DATA=\
 	$(VOID)
 
 typelib_DATA=\
+	$(gir_DATA:.gir=.typelib) \
 	$(VOID)
 
 CLEANFILES=\
