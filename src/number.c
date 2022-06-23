@@ -16,30 +16,17 @@
  *
  */
 #include <config.h>
-#include <clonable.h>
 #include <coreext.h>
 #include <numberext.h>
 
-G_DEFINE_QUARK
-(matcal-number-error-quark,
- matcal_number_error);
-
-static void
-matcal_number_matcal_clonable_iface (MatcalClonableIface* iface);
 static inline MatcalNumber*
 matcal_number_new (MatcalNumberKind kind);
 
-G_DEFINE_TYPE_WITH_CODE
-(MatcalNumber,
- matcal_number,
- MATCAL_TYPE_OBJECT,
- G_IMPLEMENT_INTERFACE
- (MATCAL_TYPE_CLONABLE,
-  matcal_number_matcal_clonable_iface)
- G_ADD_PRIVATE (MatcalNumber));
+G_DEFINE_QUARK (matcal-number-error-quark, matcal_number_error);
+G_DEFINE_TYPE_WITH_PRIVATE (MatcalNumber, matcal_number, MATCAL_TYPE_OBJECT);
 
-static MatcalClonable*
-matcal_number_matcal_clonable_iface_clone (MatcalClonable* pself)
+static MatcalObject*
+matcal_number_class_clone (MatcalObject* pself)
 {
   MatcalNumber* self1 = MATCAL_NUMBER (pself);
   MatcalNumberPrivate* priv1 = self1->priv;
@@ -58,13 +45,7 @@ matcal_number_matcal_clonable_iface_clone (MatcalClonable* pself)
     mpf_set (priv2->real, priv1->real);
     break;
   }
-return (MatcalClonable*) self2;
-}
-
-static void
-matcal_number_matcal_clonable_iface (MatcalClonableIface* iface)
-{
-  iface->clone = matcal_number_matcal_clonable_iface_clone;
+return (MatcalObject*) self2;
 }
 
 static void
@@ -92,6 +73,7 @@ matcal_number_class_init (MatcalNumberClass* klass)
 {
   MatcalObjectClass* oclass = MATCAL_OBJECT_CLASS (klass);
   oclass->finalize = matcal_number_class_finalize;
+  oclass->clone = matcal_number_class_clone;
 }
 
 static void

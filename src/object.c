@@ -16,11 +16,7 @@
  *
  */
 #include <config.h>
-#include <clonable.h>
 #include <object.h>
-
-static void
-matcal_nil_matcal_clonable_iface (MatcalClonableIface* iface);
 
 #define MATCAL_NIL_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATCAL_TYPE_NIL, MatcalNilClass))
 #define MATCAL_IS_NIL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATCAL_TYPE_NIL))
@@ -55,14 +51,7 @@ struct _MatcalNilClass
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, link) == G_STRUCT_OFFSET (GList, data));
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, next) == G_STRUCT_OFFSET (GList, next));
 G_STATIC_ASSERT (G_STRUCT_OFFSET (Chain, prev) == G_STRUCT_OFFSET (GList, prev));
-
-G_DEFINE_FINAL_TYPE_WITH_CODE
-(MatcalNil,
- matcal_nil,
- MATCAL_TYPE_OBJECT,
- G_IMPLEMENT_INTERFACE
- (MATCAL_TYPE_CLONABLE,
-  matcal_nil_matcal_clonable_iface));
+G_DEFINE_FINAL_TYPE (MatcalNil, matcal_nil, MATCAL_TYPE_OBJECT);
 
 static void
 matcal_object_class_init (MatcalObjectClass* klass);
@@ -128,11 +117,22 @@ matcal_object_class_finalize (MatcalObject* self)
 {
 }
 
+static MatcalObject*
+matcal_object_class_clone (MatcalObject* object)
+{
+  g_critical ("MatcalObject::clone not implemented for '%s'", g_type_name_from_instance ((gpointer) object));
+#if DEVELOPER
+  g_assert_not_reached ();
+#endif // DEVELOPER
+return NULL;
+}
+
 static void
 matcal_object_class_init (MatcalObjectClass* klass)
 {
   g_type_class_adjust_private_offset (klass, & matcal_object_private_offset);
   klass->finalize = matcal_object_class_finalize;
+  klass->clone = matcal_object_class_clone;
 }
 
 static void
@@ -147,21 +147,17 @@ matcal_object_init (MatcalObject* self)
   self->priv->chain.prev = NULL;
 }
 
-static MatcalClonable*
-matcal_nil_matcal_clonable_iface_clone (MatcalClonable* pself)
+static MatcalObject*
+matcal_nil_class_clone (MatcalObject* pself)
 {
   return matcal_object_new (MATCAL_TYPE_NIL);
 }
 
 static void
-matcal_nil_matcal_clonable_iface (MatcalClonableIface* iface)
-{
-  iface->clone = matcal_nil_matcal_clonable_iface_clone;
-}
-
-static void
 matcal_nil_class_init (MatcalNilClass* klass)
 {
+  MatcalObjectClass* oclass = MATCAL_OBJECT_CLASS (klass);
+  oclass->clone = matcal_nil_class_clone;
 }
 
 static void
@@ -229,6 +225,23 @@ void
       MATCAL_OBJECT_GET_CLASS (object)->finalize (self);
       g_type_free_instance ((GTypeInstance*) self);
     }
+}
+
+/**
+ * matcal_object_clone: (virtual clone)
+ * @object: (type Matcal.Object): a #MatcalObject.
+ *
+ * Clones @object, this is, creates a new instance
+ * of #MatcalObject with the same internal state.
+ * 
+ * Returns: (type Matcal.Object): (transfer full): a clone of @object.
+ */
+gpointer
+(matcal_object_clone) (gpointer object)
+{
+  g_return_val_if_fail (MATCAL_IS_OBJECT (object), NULL);
+  MatcalObjectClass* klass = MATCAL_OBJECT_GET_CLASS (object);
+return klass->clone (object);
 }
 
 static inline

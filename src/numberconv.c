@@ -16,7 +16,6 @@
  *
  */
 #include <config.h>
-#include <clonable.h>
 #include <coreext.h>
 #include <numberext.h>
 

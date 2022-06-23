@@ -63,6 +63,7 @@ struct _MatcalObject
 struct _MatcalObjectClass
 {
   GTypeClass parent;
+  MatcalObject* (*clone) (MatcalObject* object);
   void (*finalize) (MatcalObject* object);
 };
 
@@ -74,6 +75,8 @@ gpointer
 matcal_object_ref (gpointer object);
 void
 matcal_object_unref (gpointer object);
+gpointer
+matcal_object_clone (gpointer object);
 
 /* queue API */
 
@@ -101,6 +104,7 @@ matcal_object_length (gpointer head);
 #if defined(glib_typeof)
 /* Make reference APIs type safe with macros */
 # define matcal_object_ref(obj) ((glib_typeof (obj)) (matcal_object_ref) (obj))
+# define matcal_object_clone(obj) ((glib_typeof (obj)) (matcal_object_clone) (obj))
 # define matcal_object_append(obj,link) ((glib_typeof (obj)) (matcal_object_append) (obj,link))
 # define matcal_object_prepend(obj,link) ((glib_typeof (obj)) (matcal_object_prepend) (obj,link))
 # define matcal_object_insert(obj,link,position) ((glib_typeof (obj)) (matcal_object_insert) (obj,link,position))
