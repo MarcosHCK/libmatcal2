@@ -28,18 +28,17 @@ matree_expression_g_initable_iface (GInitableIface* iface);
 #define MATREE_EXPRESSION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATREE_TYPE_EXPRESSION, MatreeExpressionClass))
 typedef struct _MatreeExpressionClass MatreeExpressionClass;
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
+#define _ast_node_free0(var) ((var == NULL) ? NULL : (var = (ast_node_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_strfreev0(var) ((var == NULL) ? NULL : (var = (g_strfreev (var), NULL)))
 #define _g_free0(var) ((var == NULL) ? NULL : (var = (g_free (var), NULL)))
-typedef union _AstNode AstNode;
-#define _ast_node_free0(var) ((var == NULL) ? NULL : (var = (_ast_node_free (var), NULL)))
+typedef union _Symbol Symbol;
 
 struct _MatreeExpression
 {
   GObject parent;
 
   AstNode* ast;
-  gchar** table;
 
   gchar* infix;
   MatreeRules* rules;
@@ -53,39 +52,25 @@ struct _MatreeExpressionClass
 #define KIND_BITS (4)
 #define INDEX_BITS ((GLIB_SIZEOF_VOID_P * 8) - KIND_BITS)
 
-union _AstNode
+union _Symbol
 {
-  GNode node;
+  gpointer ptr;
+
   struct
   {
-    union
-    {
-      gpointer data;
-      struct
-      {
-        guintptr index : INDEX_BITS;
-        guintptr kind : KIND_BITS;
-      };
-    };
-
-    AstNode* next;
-    AstNode* prev;
-    AstNode* parent;
-    AstNode* children;
+    guintptr index : INDEX_BITS;
+    guintptr kind : KIND_BITS;
   };
 };
 
-G_STATIC_ASSERT (sizeof (AstNode) == sizeof (GNode));
-G_STATIC_ASSERT (G_STRUCT_OFFSET (AstNode, next) == G_STRUCT_OFFSET (GNode, next));
-G_STATIC_ASSERT (G_STRUCT_OFFSET (AstNode, prev) == G_STRUCT_OFFSET (GNode, prev));
-G_STATIC_ASSERT (G_STRUCT_OFFSET (AstNode, parent) == G_STRUCT_OFFSET (GNode, parent));
-G_STATIC_ASSERT (G_STRUCT_OFFSET (AstNode, children) == G_STRUCT_OFFSET (GNode, children));
+G_STATIC_ASSERT (sizeof (Symbol) == sizeof (gpointer));
 
 enum
 {
   prop_0,
   prop_rules,
   prop_infix,
+  prop_ast,
   prop_number,
 };
 
@@ -104,26 +89,17 @@ G_DEFINE_QUARK
 (matree-expression-error-quark,
  matree_expression_error);
 
-static AstNode*
-_ast_node_new (gint index, SymbolKind kind)
+static Symbol
+_symbol_make (gint index, SymbolKind kind)
 {
-  AstNode* node = NULL;
-  GNode* pnode = NULL;
+  Symbol sym;
 #if DEVELOPER
   g_assert (((1ll << INDEX_BITS) - 1) >= (gint) index);
   g_assert (((1ll << KIND_BITS) - 1) >= (gint) kind);
 #endif // DEVELOPER
-  pnode = g_node_new (NULL);
-  node = (AstNode*) pnode;
-  node->index = (gint) index;
-  node->kind = (gint) kind;
-return node;
-}
-
-static void
-_ast_node_free (gpointer pnode)
-{
-  g_node_destroy (pnode);
+  sym.index = (gint) index;
+  sym.kind = (gint) kind;
+return sym;
 }
 
 static gint
@@ -148,9 +124,9 @@ matree_expression_parse_tokens (MatreeExpression* self, GQueue* output, GQueue* 
   GError* tmp_err = NULL;
   SymbolClass* klass = NULL;
   SymbolClass* classes = NULL;
-  AstNode* node = NULL;
   gchar* token = NULL;
   guint i = 0;
+  Symbol sym;
 
   classes = g_new (SymbolClass, g_strv_length (tokens));
 
@@ -177,24 +153,24 @@ matree_expression_parse_tokens (MatreeExpression* self, GQueue* output, GQueue* 
       {
       case SYMBOL_KIND_CONSTANT:
       case SYMBOL_KIND_VARIABLE:
-        node = _ast_node_new (i - 1, klass->kind);
-        g_queue_push_head (output, node);
+        sym = _symbol_make (i - 1, klass->kind);
+        g_queue_push_head (output, sym.ptr);
         break;
       case SYMBOL_KIND_FUNCTION:
-        node = _ast_node_new (i - 1, klass->kind);
-        g_queue_push_head (operators, node);
+        sym = _symbol_make (i - 1, klass->kind);
+        g_queue_push_head (operators, sym.ptr);
         break;
       case SYMBOL_KIND_PARENTHESIS:
         if (token[0] == '(')
           {
-            node = _ast_node_new (i - 1, klass->kind);
-            g_queue_push_head (operators, node);
+            sym = _symbol_make (i - 1, klass->kind);
+            g_queue_push_head (operators, sym.ptr);
           } else
         if (token[0] == ')')
         while (TRUE)
           {
-            node = g_queue_pop_head (operators);
-            if (node == NULL)
+            sym = (Symbol) g_queue_pop_head (operators);
+            if (sym.ptr == NULL)
               {
                 g_set_error
                 (error,
@@ -202,21 +178,19 @@ matree_expression_parse_tokens (MatreeExpression* self, GQueue* output, GQueue* 
                  MATREE_EXPRESSION_ERROR_UNMATCHED_PARENTHESIS,
                  "%i: unmatched ')' parenthesis",
                  calculate_offset (tokens, i - 1));
-                _ast_node_free (node);
                 _g_free0 (classes);
                 return NULL;
               }
 
-            if (node->kind != SYMBOL_KIND_PARENTHESIS)
-              g_queue_push_head (output, node);
+            if (sym.kind != SYMBOL_KIND_PARENTHESIS)
+              g_queue_push_head (output, sym.ptr);
             else
               {
-                _ast_node_free (node);
-                node = g_queue_peek_head (operators);
-                if (node != NULL && node->kind == SYMBOL_KIND_FUNCTION)
+                sym = (Symbol) g_queue_peek_head (operators);
+                if (sym.ptr != NULL && sym.kind == SYMBOL_KIND_FUNCTION)
                   {
-                    node = g_queue_pop_head (operators);
-                    g_queue_push_head (output, node);
+                    sym = (Symbol) g_queue_pop_head (operators);
+                    g_queue_push_head (output, sym.ptr);
                   }
 
                 break;
@@ -230,46 +204,46 @@ matree_expression_parse_tokens (MatreeExpression* self, GQueue* output, GQueue* 
       case SYMBOL_KIND_OPERATOR:
         do
         {
-          node = g_queue_peek_head (operators);
-          if (node == NULL)
+          sym = (Symbol) g_queue_peek_head (operators);
+          if (sym.ptr == NULL)
             break;
 
-          if (node->kind != SYMBOL_KIND_PARENTHESIS)
+          if (sym.kind != SYMBOL_KIND_PARENTHESIS)
             {
               OperatorClass* opclass1 = & klass->opclass;
-              OperatorClass* opclass2 = & classes [node->index].opclass;
+              OperatorClass* opclass2 = & classes [sym.index].opclass;
               if ((opclass2->precedence > opclass1->precedence)
                 || (opclass2->precedence == opclass1->precedence)
                 && (opclass1->assoc == OPERATOR_ASSOC_LEFT))
                 {
-                  node = g_queue_pop_head (operators);
-                  g_queue_push_head (output, node);
+                  sym = (Symbol) g_queue_pop_head (operators);
+                  g_queue_push_head (output, sym.ptr);
                   continue;
                 }
             }
         } while (FALSE);
 
-        node = _ast_node_new (i - 1, klass->kind);
-        g_queue_push_head (operators, node);
+        sym = _symbol_make (i - 1, klass->kind);
+        g_queue_push_head (operators, sym.ptr);
         break;
       }
     }
 
-  while ((node = g_queue_pop_head (operators)))
+  while ((sym = (Symbol) g_queue_pop_head (operators)).ptr)
     {
-      if (node->kind == SYMBOL_KIND_PARENTHESIS)
+      if (sym.kind == SYMBOL_KIND_PARENTHESIS)
         {
           g_set_error
           (error,
            MATREE_EXPRESSION_ERROR,
            MATREE_EXPRESSION_ERROR_UNMATCHED_PARENTHESIS,
            "%i: unmatched '(' parenthesis",
-           calculate_offset (tokens, node->index));
+           calculate_offset (tokens, sym.index));
           _g_free0 (classes);
           return NULL;
         }
 
-      g_queue_push_head (output, node);
+      g_queue_push_head (output, sym.ptr);
     }
 return classes;
 }
@@ -280,41 +254,46 @@ matree_expression_build_tree (MatreeExpression* self, GQueue* output, gchar** to
   AstNode* node = NULL;
   AstNode* tree = NULL;
   SymbolClass* klass;
+  gchar* token;
   OperatorClass* opclass;
   FunctionClass* fnclass;
   GQueue nodes;
   guint i, top;
+  Symbol sym;
 
   g_queue_init (&nodes);
 #define nodes (&nodes)
 
-  while ((node = g_queue_pop_tail (output)) != NULL)
+  while ((sym = (Symbol) g_queue_pop_tail (output)).ptr)
     {
-      klass = & classes [node->index];
-      switch (node->kind)
+      klass = & classes [sym.index];
+      token = tokens [sym.index];
+      switch (sym.kind)
       {
       case SYMBOL_KIND_CONSTANT:
+        tree = ast_node_new (token, AST_SYMBOL_CONSTANT);
+        goto pushplain;
       case SYMBOL_KIND_VARIABLE:
-        g_queue_push_head (nodes, node);
-        break;
-
+        tree = ast_node_new (token, AST_SYMBOL_VARIABLE);
+        goto pushplain;
       case SYMBOL_KIND_OPERATOR:
         opclass = & klass->opclass;
         top = (opclass->unary) ? 1 : 2;
-        goto poppush;
+        goto pushargs;
       case SYMBOL_KIND_FUNCTION:
         fnclass = & klass->fnclass;
         top = fnclass->n_args;
-        goto poppush;
+        goto pushargs;
 
-      poppush:
-        tree = node;
+      pushargs:
+        tree = ast_node_new (token, AST_SYMBOL_FUNCTION);
         for (i = 0; i < top; i++)
           {
             node = g_queue_pop_head (nodes);
             g_node_prepend ((gpointer) tree, (gpointer) node);
           }
 
+      pushplain:
         g_queue_push_head (nodes, tree);
         break;
       }
@@ -323,11 +302,12 @@ matree_expression_build_tree (MatreeExpression* self, GQueue* output, gchar** to
   tree =
   g_queue_pop_tail (nodes);
 #undef nodes
-  g_queue_clear_full (&nodes, _ast_node_free);
+  g_queue_clear_full
+  (&nodes,
+   (GDestroyNotify)
+   ast_node_destroy);
 return tree;
 }
-
-#include <stdio.h>
 
 static gboolean
 matree_expression_g_initable_iface_init (GInitable* pself, GCancellable* cancellable, GError** error)
@@ -376,12 +356,12 @@ matree_expression_g_initable_iface_init (GInitable* pself, GCancellable* cancell
 
   classes =
   matree_expression_parse_tokens (self, &output, &operators, tokens, &tmp_err);
-  g_queue_clear_full (&operators, _ast_node_free);
+  g_queue_clear (&operators);
 
   if (G_UNLIKELY (tmp_err != NULL))
     {
       g_propagate_error (error, tmp_err);
-      g_queue_clear_full (&output, _ast_node_free);
+      g_queue_clear (&output);
       _g_strfreev0 (tokens);
       _g_free0 (classes);
       return FALSE;
@@ -389,19 +369,18 @@ matree_expression_g_initable_iface_init (GInitable* pself, GCancellable* cancell
 
   tree =
   matree_expression_build_tree (self, &output, tokens, classes, &tmp_err);
-  g_queue_clear_full (&output, _ast_node_free);
+  g_queue_clear (&output);
+  _g_strfreev0 (tokens);
   _g_free0 (classes);
 
   if (G_UNLIKELY (tmp_err != NULL))
     {
       g_propagate_error (error, tmp_err);
       _ast_node_free0 (tree);
-      _g_strfreev0 (tokens);
       return FALSE;
     }
 
   self->ast = tree;
-  self->table = tokens;
 return TRUE;
 }
 
@@ -416,7 +395,6 @@ matree_expression_class_finalize (GObject* pself)
 {
   MatreeExpression* self = MATREE_EXPRESSION (pself);
   _ast_node_free0 (self->ast);
-  _g_strfreev0 (self->table);
   _g_free0 (self->infix);
 G_OBJECT_CLASS (matree_expression_parent_class)->finalize (pself);
 }
@@ -460,6 +438,9 @@ matree_expression_class_get_property (GObject* pself, guint prop_id, GValue* val
   case prop_infix:
     g_value_set_string (value, matree_expression_get_infix (self));
     break;
+  case prop_ast:
+    g_value_set_pointer (value, matree_expression_get_ast (self));
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (pself, prop_id, pspec);
     break;
@@ -478,6 +459,7 @@ matree_expression_class_init (MatreeExpressionClass* klass)
 
   properties [prop_rules] = g_param_spec_object ("rules", "rules", "rules", MATREE_TYPE_RULES, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   properties [prop_infix] = g_param_spec_string ("infix", "infix", "infix", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+  properties [prop_ast] = g_param_spec_pointer ("ast", "ast", "ast", G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_properties (G_OBJECT_CLASS (klass), prop_number, properties);
 }
 
@@ -526,4 +508,15 @@ matree_expression_get_infix (MatreeExpression* expression)
 {
   g_return_val_if_fail (MATREE_IS_EXPRESSION (expression), NULL);
 return expression->infix;
+}
+
+/**
+ * matree_expression_get_ast:
+ * Returns: (transfer none):
+ */
+AstNode*
+matree_expression_get_ast (MatreeExpression* expression)
+{
+  g_return_val_if_fail (MATREE_IS_EXPRESSION (expression), NULL);
+return expression->ast;
 }

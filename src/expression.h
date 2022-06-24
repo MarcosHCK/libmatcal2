@@ -17,6 +17,7 @@
  */
 #ifndef __MATREE_EXPRESSION__
 #define __MATREE_EXPRESSION__ 1
+#include <libast.h>
 #include <rules.h>
 
 #define MATREE_EXPRESSION_ERROR (matree_expression_error_quark ())
@@ -32,7 +33,6 @@ typedef enum
 #define MATREE_TYPE_EXPRESSION (matree_expression_get_type ())
 #define MATREE_EXPRESSION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATREE_TYPE_EXPRESSION, MatreeExpression))
 #define MATREE_IS_EXPRESSION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATREE_TYPE_EXPRESSION))
-
 typedef struct _MatreeExpression MatreeExpression;
 
 #if __cplusplus
@@ -50,6 +50,8 @@ MatreeRules*
 matree_expression_get_rules (MatreeExpression* expression);
 const gchar*
 matree_expression_get_infix (MatreeExpression* expression);
+AstNode*
+matree_expression_get_ast (MatreeExpression* expression);
 
 #if __cplusplus
 }

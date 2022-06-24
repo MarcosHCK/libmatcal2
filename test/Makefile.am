@@ -69,4 +69,5 @@ test_LDADD=\
 	-lmatcal \
 	-lmatlib \
 	-lmatree \
+	-last \
 	$(VOID)

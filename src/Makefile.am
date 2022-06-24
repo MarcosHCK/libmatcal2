@@ -43,33 +43,36 @@ SUBDIRS=\
 	$(VOID)
 
 #
-# Extras
+# Binaries and libraries
+# - declare
 #
 
 EXTRA_DIST+=\
-	arithmetics.h \
-	coreext.h \
-	core.h \
-	expression.h \
 	libmatcal.h \
 	libmatcalext.h \
 	libmatlib.h \
 	libmatree.h \
-	number.h \
-	numberext.h \
-	object.h \
-	rules.h \
-	rulesext.h \
+	libast.h \
 	$(VOID)
-
-#
-# Binaries and libraries
-#
 
 pkglib_LTLIBRARIES=\
 	libmatcal.la \
 	libmatlib.la \
 	libmatree.la \
+	libast.la \
+	$(VOID)
+
+#
+# Binaries and libraries
+# - sources
+#
+
+EXTRA_DIST+=\
+	coreext.h \
+	core.h \
+	number.h \
+	numberext.h \
+	object.h \
 	$(VOID)
 
 libmatcal_la_SOURCES=\
@@ -100,6 +103,10 @@ libmatcal_la_LDFLAGS=\
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
 	$(VOID)
 
+EXTRA_DIST+=\
+	arithmetics.h \
+	$(VOID)
+
 libmatlib_la_SOURCES=\
 	arithmetics.c \
 	$(VOID)
@@ -126,6 +133,12 @@ libmatlib_la_LDFLAGS=\
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
 	$(VOID)
 
+EXTRA_DIST+=\
+	expression.h \
+	rules.h \
+	rulesext.h \
+	$(VOID)
+
 libmatree_la_SOURCES=\
 	expression.c \
 	rules.c \
@@ -141,8 +154,34 @@ libmatree_la_LIBADD=\
 	$(GIO_LIBS) \
 	$(GLIB_LIBS) \
 	$(GOBJECT_LIBS) \
+	libast.la \
 	$(VOID)
 libmatree_la_LDFLAGS=\
+	-rpath ${pkglibdir} \
+	-release ${PACKAGE_RELEASE} \
+	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
+	$(VOID)
+
+EXTRA_DIST+=\
+	node.h \
+	$(VOID)
+
+libast_la_SOURCES=\
+	node.c \
+	$(VOID)
+libast_la_CFLAGS=\
+	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
+	-DG_LOG_DOMAIN=\"Ast\" \
+	-D__LIBAST_INSIDE__=1 \
+	$(VOID)
+libast_la_LIBADD=\
+	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
+	$(VOID)
+libast_la_LDFLAGS=\
 	-rpath ${pkglibdir} \
 	-release ${PACKAGE_RELEASE} \
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
@@ -184,7 +223,7 @@ Matcal-${GIR_VERSION}.gir: matcal.list ${top_srcdir}/src/libmatcal.la
 		--filelist $< --output $@ \
 		$(VOID)
 
-Matlib-${GIR_VERSION}.gir: matlib.list ${top_srcdir}/src/libmatlib.la
+Matlib-${GIR_VERSION}.gir: matlib.list ${top_srcdir}/src/libmatlib.la Matcal-${GIR_VERSION}.gir
 	${INTROSPECTION_SCANNER} \
 		--nsversion "${GIR_VERSION}" \
 		--library "${top_srcdir}/src/libmatlib.la" \
@@ -201,7 +240,7 @@ Matlib-${GIR_VERSION}.gir: matlib.list ${top_srcdir}/src/libmatlib.la
 		--filelist $< --output $@ \
 		$(VOID)
 
-Matree-${GIR_VERSION}.gir: matree.list ${top_srcdir}/src/libmatree.la
+Matree-${GIR_VERSION}.gir: matree.list ${top_srcdir}/src/libmatree.la Matcal-${GIR_VERSION}.gir Ast-${GIR_VERSION}.gir
 	${INTROSPECTION_SCANNER} \
 		--nsversion "${GIR_VERSION}" \
 		--library "${top_srcdir}/src/libmatree.la" \
@@ -215,6 +254,23 @@ Matree-${GIR_VERSION}.gir: matree.list ${top_srcdir}/src/libmatree.la
 		--include-first-in-src="config.h" \
 		$(addprefix --include , ${GIR_INCLUDES}) \
 		--include-uninstalled="Matcal-${GIR_VERSION}.gir" \
+		--include-uninstalled="Ast-${GIR_VERSION}.gir" \
+		--filelist $< --output $@ \
+		$(VOID)
+
+Ast-${GIR_VERSION}.gir: ast.list ${top_srcdir}/src/libast.la
+	${INTROSPECTION_SCANNER} \
+		--nsversion "${GIR_VERSION}" \
+		--library "${top_srcdir}/src/libast.la" \
+		--warn-all \
+		--namespace "Ast" \
+		--cflags-begin \
+			-I${top_srcdir}/src/ \
+		--cflags-end \
+		--libtool "$(LIBTOOL)" \
+		--sources-top-dirs=${top_srcdir} \
+		--include-first-in-src="config.h" \
+		$(addprefix --include , ${GIR_INCLUDES}) \
 		--filelist $< --output $@ \
 		$(VOID)
 
@@ -222,6 +278,7 @@ gir_DATA=\
 	Matcal-${GIR_VERSION}.gir \
 	Matlib-${GIR_VERSION}.gir \
 	Matree-${GIR_VERSION}.gir \
+	Ast-${GIR_VERSION}.gir \
 	$(VOID)
 
 typelib_DATA=\

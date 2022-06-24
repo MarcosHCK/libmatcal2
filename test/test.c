@@ -19,6 +19,7 @@
 #include <libmatcal.h>
 #include <libmatlib.h>
 #include <libmatree.h>
+#include <libast.h>
 #include <glib.h>
 
 typedef struct
@@ -49,6 +50,20 @@ fixture_tear_down (Fixture* fixture, gconstpointer argument)
  * Tests
  *
  */
+
+static void
+matcal_test_ast_append (Fixture* fixture, gpointer shared)
+{
+  AstNode* node1 = ast_node_new ("node 1", 0);
+  AstNode* node2 = ast_node_new ("node 2", 0);
+  AstNode* node3 = ast_node_new ("node 3", 0);
+
+  g_node_append ((gpointer) node3, (gpointer) node1);
+  g_node_append ((gpointer) node3, (gpointer) node2);
+  g_assert (G_NODE_IS_ROOT (node3));
+  g_assert (g_node_get_root ((gpointer) node2) == (GNode*) node3);
+  ast_node_destroy (node3);
+}
 
 static void
 matcal_test_object_append (Fixture* fixture, gpointer shared)
@@ -244,6 +259,7 @@ int main(int argc, char *argv[])
      fixture_tear_down); \
   } G_STMT_END
 
+  test_add (GTESTROOT "/ast/append", matcal_test_ast_append);
   test_add (GTESTROOT "/object/append", matcal_test_object_append);
   test_add (GTESTROOT "/object/remove", matcal_test_object_remove);
   test_add (GTESTROOT "/core/push", matcal_test_core_push);
