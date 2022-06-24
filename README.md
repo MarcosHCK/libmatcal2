@@ -1,4 +1,4 @@
-# libmatcal
+# libmatcal2
 
 ---
 
