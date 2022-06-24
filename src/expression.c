@@ -109,7 +109,10 @@ _ast_node_new (gint index, SymbolKind kind)
 {
   AstNode* node = NULL;
   GNode* pnode = NULL;
-
+#if DEVELOPER
+  g_assert (((1ll << INDEX_BITS) - 1) >= (gint) index);
+  g_assert (((1ll << KIND_BITS) - 1) >= (gint) kind);
+#endif // DEVELOPER
   pnode = g_node_new (NULL);
   node = (AstNode*) pnode;
   node->index = (gint) index;
@@ -503,6 +506,10 @@ matree_expression_new (MatreeRules* rules, const gchar* infix, GError** error)
    NULL);
 }
 
+/**
+ * matree_expression_get_rules:
+ * Returns: (transfer none):
+ */
 MatreeRules*
 matree_expression_get_rules (MatreeExpression* expression)
 {
@@ -510,6 +517,10 @@ matree_expression_get_rules (MatreeExpression* expression)
 return expression->rules;
 }
 
+/**
+ * matree_expression_get_infix:
+ * Returns: (transfer none):
+ */
 const gchar*
 matree_expression_get_infix (MatreeExpression* expression)
 {

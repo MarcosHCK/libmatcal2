@@ -104,6 +104,13 @@ matree_rules_init (MatreeRules* self)
   g_array_set_clear_func ((gpointer) self->classes, (GDestroyNotify) symbol_class_free);
 }
 
+/**
+ * matree_rules_new: (constructor)
+ * 
+ * See return.
+ * 
+ * Returns: (transfer full): an empty #MatreeRules instance.
+ */
 MatreeRules*
 matree_rules_new ()
 {
@@ -203,6 +210,13 @@ load_default_rules (MatreeRules* rules, GError** error)
 #undef throw
 }
 
+/**
+ * matree_rules_new_default: (constructor)
+ * 
+ * See return.
+ * 
+ * Returns: (transfer full): a #MatreeRules instance.
+ */
 MatreeRules*
 matree_rules_new_default ()
 {
