@@ -233,6 +233,12 @@ matcal_test_expression_parse (Fixture* fixture, gpointer shared)
   g_assert_no_error (tmp_err);
   _g_object_unref0 (exp);
 
+  matree_rules_register_function (fixture->rules, "sin", 1);
+  matree_rules_register_function (fixture->rules, "cos", 1);
+  matree_rules_register_function (fixture->rules, "tan", 1);
+  matree_rules_register_function (fixture->rules, "max", 2);
+  matree_rules_register_function (fixture->rules, "min", 2);
+
   exp = matree_expression_new (fixture->rules, "sin ( max ( 2, 3 ) / 3 * p )", &tmp_err);
   g_assert_no_error (tmp_err);
   _g_object_unref0 (exp);

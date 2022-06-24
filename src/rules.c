@@ -28,12 +28,18 @@ typedef struct _MatreeRulesClass MatreeRulesClass;
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_strfreev0(var) ((var == NULL) ? NULL : (var = (g_strfreev (var), NULL)))
 #define _g_free0(var) ((var == NULL) ? NULL : (var = (g_free (var), NULL)))
+typedef struct _SymbolClassEntry SymbolClassEntry;
 
 const int prealloc = 16;
 
 struct _MatreeRules
 {
-  GObject parent;
+  GObject parent; 
+
+  GHashTable* registry;
+
+  guint fn_token;
+  guint fn_class;
 
   union
   {
@@ -50,7 +56,12 @@ struct _MatreeRules
     GArray array_;
     struct
     {
-      SymbolClass *e;
+      struct _SymbolClassEntry
+      {
+        GRegex* regex;
+        SymbolClass klass;
+      } *e;
+
       guint len;
     };
   } *classes;
@@ -67,6 +78,7 @@ static void
 matree_rules_class_finalize (GObject* pself)
 {
   MatreeRules* self = MATREE_RULES (pself);
+  g_hash_table_unref (self->registry);
   g_ptr_array_unref ((gpointer) self->tokenize);
   g_array_unref ((gpointer) self->classes);
 G_OBJECT_CLASS (matree_rules_parent_class)->finalize (pself);
@@ -76,6 +88,7 @@ static void
 matree_rules_class_dispose (GObject* pself)
 {
   MatreeRules* self = MATREE_RULES (pself);
+  g_hash_table_remove_all (self->registry);
 G_OBJECT_CLASS (matree_rules_parent_class)->dispose (pself);
 }
 
@@ -89,19 +102,24 @@ matree_rules_class_init (MatreeRulesClass* klass)
 }
 
 static void
-symbol_class_free (SymbolClass* klass)
+symbol_class_entry_free (SymbolClassEntry* entry)
 {
-  g_regex_unref (klass->regex);
+  g_regex_unref (entry->regex);
 }
 
 static void
 matree_rules_init (MatreeRules* self)
 {
+  gsize bytes = sizeof (SymbolClassEntry);
+  self->registry = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
   self->tokenize = (gpointer) g_ptr_array_sized_new (prealloc);
-  self->classes = (gpointer) g_array_sized_new (0, 1, sizeof (SymbolClass), prealloc);
+  self->classes = (gpointer) g_array_sized_new (0, 1, bytes, prealloc);
+
+  self->fn_token = -1;
+  self->fn_class = -1;
 
   g_ptr_array_set_free_func ((gpointer) self->tokenize, (GDestroyNotify) g_regex_unref);
-  g_array_set_clear_func ((gpointer) self->classes, (GDestroyNotify) symbol_class_free);
+  g_array_set_clear_func ((gpointer) self->classes, (GDestroyNotify) symbol_class_entry_free);
 }
 
 /**
@@ -132,17 +150,17 @@ load_default_rules (MatreeRules* rules, GError** error)
   } G_STMT_END
 
   { /* all things which is not a number or a letter */
-    _matree_rules_add_token (rules, "[^a-zA-Z0-9\\.]", &tmp_err);
+    _matree_rules_add_token (rules, "[^a-zA-Z0-9\\.]", -1, &tmp_err);
     throw (error, tmp_err);
 
     {
-      SymbolClass klass = {NULL, SYMBOL_KIND_PARENTHESIS, };
+      SymbolClass klass = {SYMBOL_KIND_PARENTHESIS, };
       _matree_rules_add_class (rules, "[\\(\\)]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
     }
 
     {
-      SymbolClass klass = {NULL, SYMBOL_KIND_OPERATOR, };
+      SymbolClass klass = {SYMBOL_KIND_OPERATOR, };
       const OperatorClass pwclass = {OPERATOR_ASSOC_RIGHT, 4, FALSE};
       const OperatorClass mlclass = {OPERATOR_ASSOC_LEFT, 3, FALSE};
       const OperatorClass dvclass = {OPERATOR_ASSOC_LEFT, 3, FALSE};
@@ -171,37 +189,20 @@ load_default_rules (MatreeRules* rules, GError** error)
     }
   }
 
-  { /* some functions */
-    FunctionClass fnclass = {1};
-    _matree_rules_add_function (rules, "sin", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-    _matree_rules_add_function (rules, "cos", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-    _matree_rules_add_function (rules, "tan", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-    _matree_rules_add_function (rules, "lg[0-9]+", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-  }
-
-  {
-    FunctionClass fnclass = {2};
-    _matree_rules_add_function (rules, "max", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-    _matree_rules_add_function (rules, "min", &fnclass, -1, &tmp_err);
-    throw (error, tmp_err);
-  }
+  rules->fn_token = rules->tokenize->len;
+  rules->fn_class = rules->classes->len;
 
   { /* variables */
-    SymbolClass klass = {NULL, SYMBOL_KIND_VARIABLE, };
-    _matree_rules_add_token (rules, "[a-zA-Z]", &tmp_err);
+    SymbolClass klass = {SYMBOL_KIND_VARIABLE, };
+    _matree_rules_add_token (rules, "[a-zA-Z]", -1, &tmp_err);
     throw (error, tmp_err);
     _matree_rules_add_class (rules, "[a-zA-Z]", &klass, -1, &tmp_err);
     throw (error, tmp_err);
   }
 
   { /* numbers */
-    SymbolClass klass = {NULL, SYMBOL_KIND_CONSTANT, };
-    _matree_rules_add_token (rules, "[0-9\\.]+", &tmp_err);
+    SymbolClass klass = {SYMBOL_KIND_CONSTANT, };
+    _matree_rules_add_token (rules, "[0-9\\.]+", -1, &tmp_err);
     throw (error, tmp_err);
     _matree_rules_add_class (rules, "[0-9\\.]+", &klass, -1, &tmp_err);
     throw (error, tmp_err);
@@ -385,7 +386,7 @@ _matree_rules_classify (MatreeRules* self, const gchar* input, GError** error)
 
       if (matches)
         {
-          return & self->classes->e [i];
+          return & self->classes->e [i].klass;
         }
     }
 return NULL;
@@ -394,23 +395,15 @@ return NULL;
 /* lexer & classifier adders */
 
 static inline void
-_matree_rules_tokenize_add (MatreeRules* self, GRegex* regex)
+_matree_rules_tokenize_add (MatreeRules* self, GRegex* regex, gssize pos)
 {
-  g_ptr_array_add ((gpointer) self->tokenize, g_regex_ref (regex));
-}
-
-static inline void
-_matree_rules_classify_add (MatreeRules* self, GRegex* regex, SymbolClass* klass, gint pos)
-{
-  SymbolClass entry = *klass;
-  pos = (pos == -1) ? self->classes->len : pos;
-  entry.regex = g_regex_ref (regex);
-  g_array_insert_vals ((gpointer) self->classes, pos, &entry, 1);
+  pos = (pos == -1) ? self->tokenize->len : pos;
+  g_ptr_array_insert ((gpointer) self->tokenize, pos, g_regex_ref (regex));
 }
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_token (MatreeRules* self, const gchar* expr, GError** error)
+_matree_rules_add_token (MatreeRules* self, const gchar* expr, gssize pos, GError** error)
 {
   GError* tmp_err = NULL;
   GRegex* regex = NULL;
@@ -424,13 +417,23 @@ _matree_rules_add_token (MatreeRules* self, const gchar* expr, GError** error)
       return;
     }
 
-  _matree_rules_tokenize_add (self, regex);
+  _matree_rules_tokenize_add (self, regex, pos);
   _g_regex_unref0 (regex);
+}
+
+static inline void
+_matree_rules_classify_add (MatreeRules* self, GRegex* regex, const SymbolClass* klass, gssize pos)
+{
+  SymbolClassEntry entry = {0};
+  pos = (pos == -1) ? self->classes->len : pos;
+  entry.regex = g_regex_ref (regex);
+  entry.klass = *klass;
+  g_array_insert_vals ((gpointer) self->classes, pos, &entry, 1);
 }
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_class (MatreeRules* self, const gchar* expr, SymbolClass* klass, gint pos, GError** error)
+_matree_rules_add_class (MatreeRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error)
 {
   GError* tmp_err = NULL;
   GRegex* regex = NULL;
@@ -448,53 +451,46 @@ _matree_rules_add_class (MatreeRules* self, const gchar* expr, SymbolClass* klas
   _g_regex_unref0 (regex);
 }
 
-G_GNUC_INTERNAL
-void
-_matree_rules_add_operator (MatreeRules* self, const gchar* expr, OperatorClass* opclass, gint pos, GError** error)
+gboolean
+matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_args)
 {
+  g_return_val_if_fail (MATREE_IS_RULES (rules), FALSE);
+  g_return_val_if_fail (name != NULL, FALSE);
+  g_return_val_if_fail (!g_hash_table_lookup (rules->registry, name), FALSE);
+  g_return_val_if_fail (n_args < 1000 /* this is arbitrary */, FALSE);
+  MatreeRules* self = (rules);
   GError* tmp_err = NULL;
-  SymbolClass klass = {0};
 
-  klass.kind = SYMBOL_KIND_OPERATOR;
-  klass.opclass = *opclass;
+  const FunctionClass fnclass = {n_args};
+  const SymbolClass klass = {SYMBOL_KIND_FUNCTION, .fnclass = fnclass};
 
-  _matree_rules_add_token (self, expr, &tmp_err);
+  _matree_rules_add_token (self, name, self->fn_token, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
-      g_propagate_error (error, tmp_err);
-      return;
+      g_warning
+      ("(%s): %s: %i: %s",
+       G_STRLOC,
+       g_quark_to_string
+       (tmp_err->domain),
+       tmp_err->code,
+       tmp_err->message);
+      _g_error_free0 (tmp_err);
+      return FALSE;
     }
 
-  _matree_rules_add_class (self, expr, &klass, pos, &tmp_err);
+  _matree_rules_add_class (self, name, &klass, self->fn_class, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
-      g_propagate_error (error, tmp_err);
-      return;
+      g_warning
+      ("(%s): %s: %i: %s",
+       G_STRLOC,
+       g_quark_to_string
+       (tmp_err->domain),
+       tmp_err->code,
+       tmp_err->message);
+      _g_error_free0 (tmp_err);
+      return FALSE;
     }
+
+  g_hash_table_insert (self->registry, g_strdup (name), GINT_TO_POINTER (TRUE));
 }
-
-G_GNUC_INTERNAL
-void
-_matree_rules_add_function (MatreeRules* self, const gchar* expr, FunctionClass* fnclass, gint pos, GError** error)
-{
-  GError* tmp_err = NULL;
-  SymbolClass klass = {0};
-
-  klass.kind = SYMBOL_KIND_FUNCTION;
-  klass.fnclass = *fnclass;
-
-  _matree_rules_add_token (self, expr, &tmp_err);
-  if (G_UNLIKELY (tmp_err != NULL))
-    {
-      g_propagate_error (error, tmp_err);
-      return;
-    }
-
-  _matree_rules_add_class (self, expr, &klass, pos, &tmp_err);
-  if (G_UNLIKELY (tmp_err != NULL))
-    {
-      g_propagate_error (error, tmp_err);
-      return;
-    }
-}
-

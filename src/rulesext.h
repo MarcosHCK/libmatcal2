@@ -55,7 +55,6 @@ struct _FunctionClass
 
 struct _SymbolClass
 {
-  GRegex* regex;
   SymbolKind kind;
 
   union
@@ -85,16 +84,10 @@ _matree_rules_classify (MatreeRules* rules, const gchar* input, GError** error);
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_token (MatreeRules* self, const gchar* expr, GError** error);
+_matree_rules_add_token (MatreeRules* self, const gchar* expr, gssize pos, GError** error);
 G_GNUC_INTERNAL
 void
-_matree_rules_add_class (MatreeRules* self, const gchar* expr, SymbolClass* klass, gint pos, GError** error);
-G_GNUC_INTERNAL
-void
-_matree_rules_add_operator (MatreeRules* self, const gchar* expr, OperatorClass* opclass, gint pos, GError** error);
-G_GNUC_INTERNAL
-void
-_matree_rules_add_function (MatreeRules* self, const gchar* expr, FunctionClass* fnclass, gint pos, GError** error);
+_matree_rules_add_class (MatreeRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error);
 
 #if __cplusplus
 }

@@ -35,6 +35,8 @@ MatreeRules*
 matree_rules_new ();
 MatreeRules*
 matree_rules_new_default ();
+gboolean
+matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_args);
 
 #if __cplusplus
 }
