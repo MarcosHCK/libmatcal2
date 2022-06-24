@@ -24,6 +24,7 @@
 typedef struct
 {
   MatcalCore* core;
+  MatreeRules* rules;
 } Fixture;
 
 #define GTESTROOT "/org/hck/libmatcal"
@@ -34,12 +35,14 @@ static void
 fixture_set_up (Fixture* fixture, gconstpointer argument)
 {
   fixture->core = matcal_core_new ();
+  fixture->rules = matree_rules_new_default ();
 }
 
 static void
 fixture_tear_down (Fixture* fixture, gconstpointer argument)
 {
   _g_object_unref0 (fixture->core);
+  _g_object_unref0 (fixture->rules);
 }
 
 /*
@@ -209,27 +212,14 @@ static void
 matcal_test_expression_parse (Fixture* fixture, gpointer shared)
 {
   MatreeExpression* exp = NULL;
-  MatreeTokens* tokens = NULL;
   GError* tmp_err = NULL;
 
-  tokens = matree_tokens_get_default ();
-
-  matree_tokens_add (tokens, "sin", &tmp_err);
+  exp = matree_expression_new (fixture->rules, "3+4*2 /(1\r-\n5)^2^3", &tmp_err);
   g_assert_no_error (tmp_err);
+  _g_object_unref0 (exp);
 
-  matree_tokens_add (tokens, "cos", &tmp_err);
+  exp = matree_expression_new (fixture->rules, "sin ( max ( 2, 3 ) / 3 * p )", &tmp_err);
   g_assert_no_error (tmp_err);
-  
-  matree_tokens_add (tokens, "lg[0-9]+", &tmp_err);
-  g_assert_no_error (tmp_err);
-
-  matree_tokens_add (tokens, "[a-zA-Z]", &tmp_err);
-  g_assert_no_error (tmp_err);
-
-  exp = matree_expression_new ("43+5*20y/5+sin(x)^y+(xsin(y))+54cos(lg4(32x))*sincos6", &tmp_err);
-  g_assert_no_error (tmp_err);
-
-  _g_object_unref0 (tokens);
   _g_object_unref0 (exp);
 }
 

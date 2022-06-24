@@ -17,7 +17,7 @@
  */
 #ifndef __MATREE_EXPRESSION__
 #define __MATREE_EXPRESSION__ 1
-#include <glib-object.h>
+#include <rules.h>
 
 #define MATREE_EXPRESSION_ERROR (matree_expression_error_quark ())
 
@@ -26,6 +26,7 @@ typedef enum
   MATREE_EXPRESSION_ERROR_FAILED,
   MATREE_EXPRESSION_ERROR_NOT_UTF8,
   MATREE_EXPRESSION_ERROR_SCANNER,
+  MATREE_EXPRESSION_ERROR_UNMATCHED_PARENTHESIS,
 } MatreeExpressionError;
 
 #define MATREE_TYPE_EXPRESSION (matree_expression_get_type ())
@@ -44,9 +45,11 @@ GType
 matree_expression_get_type (void) G_GNUC_CONST;
 
 MatreeExpression*
-matree_expression_new (const gchar* infix, GError** error);
+matree_expression_new (MatreeRules* rules, const gchar* infix, GError** error);
+MatreeRules*
+matree_expression_get_rules (MatreeExpression* expression);
 const gchar*
-matree_expression_get_expression (MatreeExpression* expression);
+matree_expression_get_infix (MatreeExpression* expression);
 
 #if __cplusplus
 }

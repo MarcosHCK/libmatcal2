@@ -19,6 +19,6 @@
 #define __LIBMATREE__ 1
 
 #include "expression.h"
-#include "tokens.h"
+#include "rules.h"
 
 #endif // __LIBMATREE__

@@ -58,7 +58,8 @@ EXTRA_DIST+=\
 	number.h \
 	numberext.h \
 	object.h \
-	tokens.h \
+	rules.h \
+	rulesext.h \
 	$(VOID)
 
 #
@@ -127,7 +128,7 @@ libmatlib_la_LDFLAGS=\
 
 libmatree_la_SOURCES=\
 	expression.c \
-	tokens.c \
+	rules.c \
 	$(VOID)
 libmatree_la_CFLAGS=\
 	$(GIO_CFLAGS) \
