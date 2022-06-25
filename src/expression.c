@@ -16,6 +16,8 @@
  *
  */
 #include <config.h>
+#include <corexpr.h>
+#include <compiler.h>
 #include <expression.h>
 #include <gio/gio.h>
 #include <rulesext.h>
@@ -30,6 +32,7 @@ typedef struct _MatreeExpressionClass MatreeExpressionClass;
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _ast_node_free0(var) ((var == NULL) ? NULL : (var = (ast_node_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
+#define _libjit_free0(var) ((var == NULL) ? NULL : (var = (libjit_free (var), NULL)))
 #define _g_strfreev0(var) ((var == NULL) ? NULL : (var = (g_strfreev (var), NULL)))
 #define _g_free0(var) ((var == NULL) ? NULL : (var = (g_free (var), NULL)))
 typedef union _Symbol Symbol;
@@ -39,6 +42,7 @@ struct _MatreeExpression
   GObject parent;
 
   AstNode* ast;
+  MatcalCFunction cclosure;
 
   gchar* infix;
   MatreeRules* rules;
@@ -394,6 +398,7 @@ static void
 matree_expression_class_finalize (GObject* pself)
 {
   MatreeExpression* self = MATREE_EXPRESSION (pself);
+  _libjit_free0 (self->cclosure);
   _ast_node_free0 (self->ast);
   _g_free0 (self->infix);
 G_OBJECT_CLASS (matree_expression_parent_class)->finalize (pself);
@@ -519,4 +524,55 @@ matree_expression_get_ast (MatreeExpression* expression)
 {
   g_return_val_if_fail (MATREE_IS_EXPRESSION (expression), NULL);
 return expression->ast;
+}
+
+/**
+ * matree_expression_compile:
+ * @expression: #MatreeExpression instance.
+ * @error: return location for a #GError.
+ *
+ * Compiles an expression into native code, thus
+ * sets #MatreeExpression::cclosure property.
+ *
+ * Returns: wether compilation was successful.
+ */
+gboolean
+matree_expression_compile (MatreeExpression* expression, GError** error)
+{
+  g_return_val_if_fail (MATREE_IS_EXPRESSION (expression), FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+  MatcalCFunction cclosure = NULL;
+  GError* tmp_err = NULL;
+
+  cclosure = libjit_compile (expression->ast, &tmp_err);
+  if (G_UNLIKELY (tmp_err != NULL))
+    {
+      g_propagate_error (error, tmp_err);
+      _libjit_free0 (cclosure);
+      return FALSE;
+    }
+
+  expression->cclosure = cclosure;
+return TRUE;
+}
+
+/**
+ * matree_expression_push:
+ * @expression: #MatreeExpression instance.
+ * @core: #MatcalCore instance.
+ * 
+ * Pushes @expression as a function into @core stack.
+ * You should previously called @matree_expression_compile
+ * on @expression to generate said function or otherwise it
+ * will push nothing.
+ */
+void
+matree_expression_push (MatreeExpression* expression, MatcalCore* core)
+{
+  g_return_if_fail (MATREE_IS_EXPRESSION (expression));
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  MatreeExpression* self = (expression);
+
+  g_return_if_fail (self->cclosure);
+  matcal_core_pushcfunction (core, self->cclosure);
 }

@@ -15,11 +15,10 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATREE__
-#define __LIBMATREE__ 1
+#ifndef __ARCH_MACROS__
+#define __ARCH_MACROS__ 1
+#include <glib.h>
 
-#include "corexpr.h"
-#include "expression.h"
-#include "rules.h"
-
-#endif // __LIBMATREE__
+#if __DASC__
+#endif // __DASC__
+#endif // __ARCH_MACROS__

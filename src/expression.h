@@ -17,7 +17,7 @@
  */
 #ifndef __MATREE_EXPRESSION__
 #define __MATREE_EXPRESSION__ 1
-#include <libast.h>
+#include <node.h>
 #include <rules.h>
 
 #define MATREE_EXPRESSION_ERROR (matree_expression_error_quark ())

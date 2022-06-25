@@ -19,7 +19,6 @@
 #include <libmatcal.h>
 #include <libmatlib.h>
 #include <libmatree.h>
-#include <libast.h>
 #include <glib.h>
 
 typedef struct
@@ -229,8 +228,12 @@ matcal_test_expression_parse (Fixture* fixture, gpointer shared)
   MatreeExpression* exp = NULL;
   GError* tmp_err = NULL;
 
-  exp = matree_expression_new (fixture->rules, "3+4*2 /(1\r-\n5)^2^3", &tmp_err);
+  exp = matree_expression_new (fixture->rules, "3+4*2/(1-5)^2^3", &tmp_err);
   g_assert_no_error (tmp_err);
+  matree_expression_compile (exp, &tmp_err);
+  g_assert_no_error (tmp_err);
+  matree_expression_push (exp, fixture->core);
+  matcal_core_call (fixture->core, 0, 0);
   _g_object_unref0 (exp);
 
   matree_rules_register_function (fixture->rules, "sin", 1);

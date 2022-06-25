@@ -15,9 +15,22 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBAST__
-#define __LIBAST__ 1
+#ifndef __MATREE_COMPILER__
+#define __MATREE_COMPILER__ 1
+#include <core.h>
+#include <node.h>
 
-#include "node.h"
+#if __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-#endif // __LIBAST__
+MatcalCFunction
+libjit_compile (AstNode* ast, GError** error);
+void
+libjit_free (MatcalCFunction function);
+
+#if __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __MATREE_COMPILER__

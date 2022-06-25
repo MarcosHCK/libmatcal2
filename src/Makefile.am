@@ -60,6 +60,7 @@ pkglib_LTLIBRARIES=\
 	libmatlib.la \
 	libmatree.la \
 	libast.la \
+	libjit.la \
 	$(VOID)
 
 #
@@ -154,7 +155,9 @@ libmatree_la_LIBADD=\
 	$(GIO_LIBS) \
 	$(GLIB_LIBS) \
 	$(GOBJECT_LIBS) \
+	libmatcal.la \
 	libast.la \
+	libjit.la \
 	$(VOID)
 libmatree_la_LDFLAGS=\
 	-rpath ${pkglibdir} \
@@ -187,6 +190,54 @@ libast_la_LDFLAGS=\
 	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
 	$(VOID)
 
+EXTRA_DIST+=\
+	compiler.h \
+	compiler_override.h \
+	$(VOID)
+
+EXTRA_DIST+=\
+	compiler_x86_64.c \
+	compiler_x86_64.h \
+	$(VOID)
+
+libjit_la_SOURCES=\
+	compiler_${host_cpu}.c \
+	$(VOID)
+libjit_la_CFLAGS=\
+	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
+	-I${top_builddir}/build/ \
+	-DG_LOG_DOMAIN=\"Jit\" \
+	-D__LIBJIT_INSIDE__=1 \
+	-D__DASC__=1 \
+	$(VOID)
+libjit_la_LIBADD=\
+	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
+	libast.la \
+	$(VOID)
+libjit_la_LDFLAGS=\
+	-rpath ${pkglibdir} \
+	-release ${PACKAGE_RELEASE} \
+	-version-info ${PACKAGE_VERSION_MAYOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MICRO} \
+	$(VOID)
+
+#
+# .desc.c files support
+#
+
+SUFFIXES=.dasc.c .c
+
+DYNASM_CFLAGS=\
+	-D DEBUG=\"${DEBUG}\" \
+	-D DEVELOPER=\"${DEVELOPER}\" \
+	$(VOID)
+
+.dasc.c.c:
+	$(DYNASM) $(DYNASM_CFLAGS) -o $@ $<
+
 #
 # GObject-Introspection
 #
@@ -202,7 +253,7 @@ GIR_INCLUDES=\
 	GL-1.0 \
 	$(VOID)
 
-SUFFIXES=.typelib .gir
+SUFFIXES+=.typelib .gir
 
 .gir.typelib:
 	${INTROSPECTION_COMPILER} --output $@ $<

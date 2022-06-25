@@ -15,11 +15,23 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATREE__
-#define __LIBMATREE__ 1
+#ifndef __MATREE_COREXPR__
+#define __MATREE_COREXPR__ 1
 
-#include "corexpr.h"
-#include "expression.h"
-#include "rules.h"
+#include <core.h>
+#include <expression.h>
 
-#endif // __LIBMATREE__
+#if __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+gboolean
+matree_expression_compile (MatreeExpression* expression, GError** error);
+void
+matree_expression_push (MatreeExpression* expression, MatcalCore* core);
+
+#if __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __MATREE_COREXPR__
