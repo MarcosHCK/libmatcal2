@@ -17,13 +17,16 @@
  */
 #include <config.h>
 #include <core.h>
+#include <expression.h>
 #include <object.h>
+#include <rules.h>
 
-#define MATH_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATH_TYPE_CORE, MatcalCoreClass))
-#define MATH_IS_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATH_TYPE_CORE))
-#define MATH_CORE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATH_TYPE_CORE, MatcalCoreClass))
-
+#define MATCAL_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATCAL_TYPE_CORE, MatcalCoreClass))
+#define MATCAL_IS_CORE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATCAL_TYPE_CORE))
+#define MATCAL_CORE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATCAL_TYPE_CORE, MatcalCoreClass))
 typedef struct _MatcalCoreClass MatcalCoreClass;
+#define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
+#define _g_bytes_unref0(var) ((var == NULL) ? NULL : (var = (g_bytes_unref (var), NULL)))
 
 #define MATCAL_TYPE_CLOSURE (matcal_closure_get_type ())
 #define MATCAL_CLOSURE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATCAL_TYPE_CLOSURE, MatcalClosure))
@@ -40,6 +43,7 @@ struct _MatcalCore
 {
   GObject parent_instance;
   GHashTable* globals;
+  MatcalRules* rules;
   MatcalObject* head;
   gint top;
 };
@@ -79,11 +83,9 @@ matcal_core_class_dispose (GObject* pself)
 {
   MatcalCore* self = MATCAL_CORE (pself);
   g_hash_table_remove_all (self->globals);
+  _g_object_unref0 (self->rules);
   MatcalObject* head = self->head;
-  while (head != NULL)
-    {
-      head = matcal_object_remove (head, head);
-    }
+  while ((head = matcal_object_remove (head, head)));
 G_OBJECT_CLASS (matcal_core_parent_class)->dispose (pself);
 }
 
@@ -100,6 +102,7 @@ static void
 matcal_core_init (MatcalCore* self)
 {
   self->globals = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, matcal_object_unref);
+  self->rules = matcal_rules_new_default ();
   self->head = NULL;
   self->top = 0;
 }
@@ -638,4 +641,71 @@ matcal_core_call (MatcalCore* core, int n_args, int n_results)
 
   core->top = oldindex;
 return (result < 0) ? MATCAL_CLOSURE_ERROR : MATCAL_CLOSURE_SUCCESS;
+}
+
+/**
+ * matcal_core_loadbytes:
+ * @core: a #MatcalCore instance.
+ * @code: a #GBytes instance containing mathematical source.
+ * @error: return location for #GError.
+ * 
+ * Compiles code contained in @code and pushes it onto stack.
+ * 
+ * Returns: if code was compiled successfully.
+ */
+gboolean
+matcal_core_loadbytes (MatcalCore* core, GBytes* code, GError** error)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
+  g_return_val_if_fail (code != NULL, FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+  MatcalCore* self = (core);
+  GError* tmp_err = NULL;
+  MatcalExpression* exp;
+
+  exp =
+  matcal_expression_new (self->rules, code, &tmp_err);
+  if (G_UNLIKELY (tmp_err != NULL))
+    {
+      g_propagate_error (error, tmp_err);
+      _g_object_unref0 (exp);
+      return FALSE;
+    }
+
+  matcal_expression_compile (exp, &tmp_err);
+  if (G_UNLIKELY (tmp_err != NULL))
+    {
+      g_propagate_error (error, tmp_err);
+      _g_object_unref0 (exp);
+      return FALSE;
+    }
+
+  matcal_expression_push (exp, core);
+  _g_object_unref0 (exp);
+}
+
+/**
+ * matcal_core_loadstring:
+ * @core: a #MatcalCore instance.
+ * @code: mathematical source.
+ * @error: return location for #GError.
+ *
+ * Same as matcal_core_loadbytes but compiles
+ * a C string instead.
+ *
+ * Returns: if code was compiled successfully.
+ */
+gboolean
+matcal_core_loadstring (MatcalCore* core, const gchar* code, GError** error)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
+  g_return_val_if_fail (code != NULL, FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+  GBytes* bytes = g_bytes_new_static (code, strlen (code));
+  gboolean result = FALSE;
+
+  result =
+  matcal_core_loadbytes (core, bytes, error);
+  _g_bytes_unref0 (bytes);
+return result;
 }

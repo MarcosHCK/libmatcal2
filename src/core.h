@@ -105,6 +105,11 @@ matcal_core_isfunction (MatcalCore* core, int index);
 MatcalClosureResult
 matcal_core_call (MatcalCore* core, int n_args, int n_results);
 
+gboolean
+matcal_core_loadbytes (MatcalCore* core, GBytes* code, GError** error);
+gboolean
+matcal_core_loadstring (MatcalCore* core, const gchar* code, GError** error);
+
 #if __cplusplus
 }
 #endif // __cplusplus

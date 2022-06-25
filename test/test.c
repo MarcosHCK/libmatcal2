@@ -18,13 +18,11 @@
 #include <config.h>
 #include <libmatcal.h>
 #include <libmatlib.h>
-#include <libmatree.h>
 #include <glib.h>
 
 typedef struct
 {
   MatcalCore* core;
-  MatreeRules* rules;
 } Fixture;
 
 #define GTESTROOT "/org/hck/libmatcal"
@@ -35,8 +33,6 @@ static void
 fixture_set_up (Fixture* fixture, gconstpointer argument)
 {
   fixture->core = matcal_core_new ();
-  fixture->rules = matree_rules_new_default ();
-
   matlib_setup (fixture->core);
 }
 
@@ -44,27 +40,12 @@ static void
 fixture_tear_down (Fixture* fixture, gconstpointer argument)
 {
   _g_object_unref0 (fixture->core);
-  _g_object_unref0 (fixture->rules);
 }
 
 /*
  * Tests
  *
  */
-
-static void
-matcal_test_ast_append (Fixture* fixture, gpointer shared)
-{
-  AstNode* node1 = ast_node_new ("node 1", 0);
-  AstNode* node2 = ast_node_new ("node 2", 0);
-  AstNode* node3 = ast_node_new ("node 3", 0);
-
-  g_node_append ((gpointer) node3, (gpointer) node1);
-  g_node_append ((gpointer) node3, (gpointer) node2);
-  g_assert (G_NODE_IS_ROOT (node3));
-  g_assert (g_node_get_root ((gpointer) node2) == (GNode*) node3);
-  ast_node_destroy (node3);
-}
 
 static void
 matcal_test_object_append (Fixture* fixture, gpointer shared)
@@ -224,21 +205,29 @@ matcal_test_closure_clone (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 21);
 }
 
+
+//"(3+4)*2/(1-5)"
 static void
-matcal_test_expression_parse (Fixture* fixture, gpointer shared)
+matcal_test_core_load (Fixture* fixture, gpointer shared)
 {
-  MatreeExpression* exp = NULL;
   GError* tmp_err = NULL;
 
-  exp = matree_expression_new (fixture->rules, "(3+4)*2/(1-5)", &tmp_err);
+  matcal_core_loadstring (fixture->core, "(3+4)*2/(1-5)", &tmp_err);
   g_assert_no_error (tmp_err);
-  matree_expression_compile (exp, &tmp_err);
-  g_assert_no_error (tmp_err);
-  matree_expression_push (exp, fixture->core);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
   matcal_core_call (fixture->core, 0, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
   g_assert (matcal_core_tonumber_double (fixture->core, -1) == -3.5);
   matcal_core_pop (fixture->core, 1);
-  _g_object_unref0 (exp);
+
+  matcal_core_loadstring (fixture->core, "(3+4)*2/(1-5)+x", &tmp_err);
+  g_assert_no_error (tmp_err);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  matcal_core_pushnumber_uint (fixture->core, 1);
+  matcal_core_call (fixture->core, 1, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  g_assert (matcal_core_tonumber_double (fixture->core, -1) == -2.5);
+  matcal_core_pop (fixture->core, 1);
 }
 
 /*
@@ -262,7 +251,6 @@ int main(int argc, char *argv[])
      fixture_tear_down); \
   } G_STMT_END
 
-  test_add (GTESTROOT "/ast/append", matcal_test_ast_append);
   test_add (GTESTROOT "/object/append", matcal_test_object_append);
   test_add (GTESTROOT "/object/remove", matcal_test_object_remove);
   test_add (GTESTROOT "/core/push", matcal_test_core_push);
@@ -271,6 +259,6 @@ int main(int argc, char *argv[])
   test_add (GTESTROOT "/number/calculate", matcal_test_number_calculate);
   test_add (GTESTROOT "/closure/push", matcal_test_closure_push);
   test_add (GTESTROOT "/closure/clone", matcal_test_closure_clone);
-  test_add (GTESTROOT "/expression/parse", matcal_test_expression_parse);
+  test_add (GTESTROOT "/core/parse", matcal_test_core_load);
 return g_test_run ();
 }

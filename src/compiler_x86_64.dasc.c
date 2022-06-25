@@ -122,7 +122,6 @@ return FALSE;
 static void
 pushnamedfn (MatcalCore* core, const gchar* name)
 {
-  g_print ("push '%s'\r\n", name);
   matcal_core_getglobal (core, name);
   if (!matcal_core_isfunction (core, -1))
     {
@@ -175,7 +174,7 @@ compile (AstNode* node, AstStat* q)
 #if DEVELOPER
     has =
 #endif // DEVELOPER
-    g_hash_table_lookup_extended (q->constants, name, NULL, &pidx);
+    g_hash_table_lookup_extended (q->variables, name, NULL, &pidx);
     idx = GPOINTER_TO_UINT (pidx);
 #if DEVELOPER
     g_assert (has);
@@ -326,21 +325,6 @@ libjit_compile (AstNode* ast, GError** error)
   mprotect (buf, bufsz, PROT_READ | PROT_EXEC);
 #endif // G_OS_WINDOWS
   dasm_free (Dst);
-
-  {
-    g_file_set_contents ("../program.bin", buf, bufsz, &tmp_err);
-    if (G_UNLIKELY (tmp_err != NULL))
-      {
-        g_warning
-        ("(%s): %s: %i: %s",
-         G_STRLOC,
-         g_quark_to_string
-         (tmp_err->domain),
-         tmp_err->code,
-         tmp_err->message);
-        g_error_free (tmp_err);
-      }
-  }
 
   callback = g_slice_new (JitCallback);
   callback->start = labels [globl_main];

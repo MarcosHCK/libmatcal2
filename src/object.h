@@ -45,6 +45,14 @@ matcal_object_get_type (void) G_GNUC_CONST;
 GType
 matcal_nil_get_type (void) G_GNUC_CONST;
 
+/**
+ * MatcalObject:
+ *  (ref-func matcal_object_ref)
+ *  (unref-func matcal_object_unref)
+ * @parent: parent type struct.
+ * @ref_count: references count.
+ * @priv: (skip)
+ */
 struct _MatcalObject
 {
   GTypeInstance parent;
@@ -77,6 +85,12 @@ void
 matcal_object_unref (gpointer object);
 gpointer
 matcal_object_clone (gpointer object);
+void
+matcal_object_set_qdata (gpointer object, GQuark quark, gpointer data);
+void
+matcal_object_set_qdata_full (gpointer object, GQuark quark, gpointer data, GDestroyNotify notify);
+gpointer
+matcal_object_get_qdata (gpointer object, GQuark quark);
 
 /* queue API */
 

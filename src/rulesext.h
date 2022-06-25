@@ -15,8 +15,8 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __MATREE_RULESEXT__
-#define __MATREE_RULESEXT__ 1
+#ifndef __MATCAL_RULESEXT__
+#define __MATCAL_RULESEXT__ 1
 #include <rules.h>
 
 typedef struct _OperatorClass OperatorClass;
@@ -72,25 +72,25 @@ extern "C" {
 
 G_GNUC_INTERNAL
 gchar**
-_matree_rules_tokenize (MatreeRules* rules, const gchar* input, gssize length, GError** error);
+_matcal_rules_tokenize (MatcalRules* rules, const gchar* input, gssize length, GError** error);
 
 /* classifier */
 
 G_GNUC_INTERNAL
 SymbolClass*
-_matree_rules_classify (MatreeRules* rules, const gchar* input, GError** error);
+_matcal_rules_classify (MatcalRules* rules, const gchar* input, GError** error);
 
 /* lexer & classifier adders */
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_token (MatreeRules* self, const gchar* expr, gssize pos, GError** error);
+_matcal_rules_add_token (MatcalRules* self, const gchar* expr, gssize pos, GError** error);
 G_GNUC_INTERNAL
 void
-_matree_rules_add_class (MatreeRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error);
+_matcal_rules_add_class (MatcalRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error);
 
 #if __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __MATREE_RULES__
+#endif // __MATCAL_RULES__

@@ -26,6 +26,7 @@ typedef union  _Chain Chain;
 
 struct _MatcalObjectPrivate
 {
+  GData* qdata;
   union _Chain
   {
     GList list_;
@@ -115,6 +116,7 @@ return (GType) __typeid__;
 static void
 matcal_object_class_finalize (MatcalObject* self)
 {
+  g_datalist_clear (&self->priv->qdata);
 }
 
 static MatcalObject*
@@ -141,6 +143,7 @@ matcal_object_init (MatcalObject* self)
   self->priv =
   matcal_object_get_instance_private (self);
   g_atomic_ref_count_init (& self->ref_count);
+  g_datalist_init (& self->priv->qdata);
 
   self->priv->chain.link = self;
   self->priv->chain.next = NULL;
@@ -244,6 +247,33 @@ gpointer
 return klass->clone (object);
 }
 
+void
+matcal_object_set_qdata (gpointer object, GQuark quark, gpointer data)
+{
+  g_return_if_fail (MATCAL_IS_OBJECT (object));
+  MatcalObject* self = (MatcalObject*) object;
+  g_datalist_id_set_data (& self->priv->qdata, quark, data);
+}
+
+void
+matcal_object_set_qdata_full (gpointer object, GQuark quark, gpointer data, GDestroyNotify notify)
+{
+  g_return_if_fail (MATCAL_IS_OBJECT (object));
+  MatcalObject* self = (MatcalObject*) object;
+  g_datalist_id_set_data_full (& self->priv->qdata, quark, data, notify);
+}
+
+
+gpointer
+matcal_object_get_qdata (gpointer object, GQuark quark)
+{
+  g_return_val_if_fail (MATCAL_IS_OBJECT (object), NULL);
+  MatcalObject* self = (MatcalObject*) object;
+return g_datalist_id_get_data (& self->priv->qdata, quark);
+}
+
+/* queue API */
+
 static inline
 GList*
 _list_append_link (GList* list, GList* new_list)
@@ -310,8 +340,6 @@ _list_insert_link (GList* list, GList* new_list, gint position)
   tmp_list->prev = new_list;
 return list;
 }
-
-/* queue API */
 
 /**
  * matcal_object_append: (skip)

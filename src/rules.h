@@ -15,31 +15,31 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __MATREE_RULES__
-#define __MATREE_RULES__ 1
+#ifndef __MATCAL_RULES__
+#define __MATCAL_RULES__ 1
 #include <glib-object.h>
 
-#define MATREE_TYPE_RULES (matree_rules_get_type ())
-#define MATREE_RULES(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATREE_TYPE_RULES, MatreeRules))
-#define MATREE_IS_RULES(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATREE_TYPE_RULES))
-typedef struct _MatreeRules MatreeRules;
+#define MATCAL_TYPE_RULES (matcal_rules_get_type ())
+#define MATCAL_RULES(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATCAL_TYPE_RULES, MatcalRules))
+#define MATCAL_IS_RULES(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATCAL_TYPE_RULES))
+typedef struct _MatcalRules MatcalRules;
 
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 GType
-matree_rules_get_type (void) G_GNUC_CONST;
+matcal_rules_get_type (void) G_GNUC_CONST;
 
-MatreeRules*
-matree_rules_new ();
-MatreeRules*
-matree_rules_new_default ();
+MatcalRules*
+matcal_rules_new ();
+MatcalRules*
+matcal_rules_new_default ();
 gboolean
-matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_args);
+matcal_rules_register_function (MatcalRules* rules, const gchar* name, guint n_args);
 
 #if __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __MATREE_RULES__
+#endif // __MATCAL_RULES__

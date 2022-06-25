@@ -18,10 +18,10 @@
 #include <config.h>
 #include <rulesext.h>
 
-#define MATREE_RULES_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATREE_TYPE_RULES, MatreeRulesClass))
-#define MATREE_IS_RULES_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATREE_TYPE_RULES))
-#define MATREE_RULES_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATREE_TYPE_RULES, MatreeRulesClass))
-typedef struct _MatreeRulesClass MatreeRulesClass;
+#define MATCAL_RULES_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MATCAL_TYPE_RULES, MatcalRulesClass))
+#define MATCAL_IS_RULES_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MATCAL_TYPE_RULES))
+#define MATCAL_RULES_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MATCAL_TYPE_RULES, MatcalRulesClass))
+typedef struct _MatcalRulesClass MatcalRulesClass;
 #define _g_match_info_unref0(var) ((var == NULL) ? NULL : (var = (g_match_info_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_regex_unref0(var) ((var == NULL) ? NULL : (var = (g_regex_unref (var), NULL)))
@@ -32,11 +32,9 @@ typedef struct _SymbolClassEntry SymbolClassEntry;
 
 const int prealloc = 16;
 
-struct _MatreeRules
+struct _MatcalRules
 {
-  GObject parent; 
-
-  GHashTable* registry;
+  GObject parent;
 
   guint fn_token;
   guint fn_class;
@@ -67,38 +65,36 @@ struct _MatreeRules
   } *classes;
 };
 
-struct _MatreeRulesClass
+struct _MatcalRulesClass
 {
   GObjectClass parent;
 };
 
-G_DEFINE_FINAL_TYPE (MatreeRules, matree_rules, G_TYPE_OBJECT);
+G_DEFINE_FINAL_TYPE (MatcalRules, matcal_rules, G_TYPE_OBJECT);
 
 static void
-matree_rules_class_finalize (GObject* pself)
+matcal_rules_class_finalize (GObject* pself)
 {
-  MatreeRules* self = MATREE_RULES (pself);
-  g_hash_table_unref (self->registry);
+  MatcalRules* self = MATCAL_RULES (pself);
   g_ptr_array_unref ((gpointer) self->tokenize);
   g_array_unref ((gpointer) self->classes);
-G_OBJECT_CLASS (matree_rules_parent_class)->finalize (pself);
+G_OBJECT_CLASS (matcal_rules_parent_class)->finalize (pself);
 }
 
 static void
-matree_rules_class_dispose (GObject* pself)
+matcal_rules_class_dispose (GObject* pself)
 {
-  MatreeRules* self = MATREE_RULES (pself);
-  g_hash_table_remove_all (self->registry);
-G_OBJECT_CLASS (matree_rules_parent_class)->dispose (pself);
+  MatcalRules* self = MATCAL_RULES (pself);
+G_OBJECT_CLASS (matcal_rules_parent_class)->dispose (pself);
 }
 
 static void
-matree_rules_class_init (MatreeRulesClass* klass)
+matcal_rules_class_init (MatcalRulesClass* klass)
 {
   GObjectClass* oclass = G_OBJECT_CLASS (klass);
 
-  oclass->finalize = matree_rules_class_finalize;
-  oclass->dispose = matree_rules_class_dispose;
+  oclass->finalize = matcal_rules_class_finalize;
+  oclass->dispose = matcal_rules_class_dispose;
 }
 
 static void
@@ -108,10 +104,9 @@ symbol_class_entry_free (SymbolClassEntry* entry)
 }
 
 static void
-matree_rules_init (MatreeRules* self)
+matcal_rules_init (MatcalRules* self)
 {
   gsize bytes = sizeof (SymbolClassEntry);
-  self->registry = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
   self->tokenize = (gpointer) g_ptr_array_sized_new (prealloc);
   self->classes = (gpointer) g_array_sized_new (0, 1, bytes, prealloc);
 
@@ -123,20 +118,20 @@ matree_rules_init (MatreeRules* self)
 }
 
 /**
- * matree_rules_new: (constructor)
+ * matcal_rules_new: (constructor)
  * 
  * See return.
  * 
- * Returns: (transfer full): an empty #MatreeRules instance.
+ * Returns: (transfer full): an empty #MatcalRules instance.
  */
-MatreeRules*
-matree_rules_new ()
+MatcalRules*
+matcal_rules_new ()
 {
-  return g_object_new (MATREE_TYPE_RULES, NULL);
+  return g_object_new (MATCAL_TYPE_RULES, NULL);
 }
 
 static inline void
-load_default_rules (MatreeRules* rules, GError** error)
+load_default_rules (MatcalRules* rules, GError** error)
 {
   GError* tmp_err = NULL;
 #define throw(loc,err) \
@@ -150,12 +145,12 @@ load_default_rules (MatreeRules* rules, GError** error)
   } G_STMT_END
 
   { /* all things which is not a number or a letter */
-    _matree_rules_add_token (rules, "[^a-zA-Z0-9\\.]", -1, &tmp_err);
+    _matcal_rules_add_token (rules, "[^a-zA-Z0-9\\.]", -1, &tmp_err);
     throw (error, tmp_err);
 
     {
       SymbolClass klass = {SYMBOL_KIND_PARENTHESIS, };
-      _matree_rules_add_class (rules, "[\\(\\)]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\(\\)]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
     }
 
@@ -168,23 +163,23 @@ load_default_rules (MatreeRules* rules, GError** error)
       const OperatorClass plclass = {OPERATOR_ASSOC_LEFT, 2, FALSE};
 
       klass.opclass = pwclass;
-      _matree_rules_add_class (rules, "[\\^]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\^]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
 
       klass.opclass = mlclass;
-      _matree_rules_add_class (rules, "[\\*]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\*]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
 
       klass.opclass = dvclass;
-      _matree_rules_add_class (rules, "[\\/]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\/]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
 
       klass.opclass = sbclass;
-      _matree_rules_add_class (rules, "[\\-]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\-]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
 
       klass.opclass = plclass;
-      _matree_rules_add_class (rules, "[\\+]", &klass, -1, &tmp_err);
+      _matcal_rules_add_class (rules, "[\\+]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
     }
   }
@@ -194,17 +189,17 @@ load_default_rules (MatreeRules* rules, GError** error)
 
   { /* variables */
     SymbolClass klass = {SYMBOL_KIND_VARIABLE, };
-    _matree_rules_add_token (rules, "[a-zA-Z]", -1, &tmp_err);
+    _matcal_rules_add_token (rules, "[a-zA-Z]", -1, &tmp_err);
     throw (error, tmp_err);
-    _matree_rules_add_class (rules, "[a-zA-Z]", &klass, -1, &tmp_err);
+    _matcal_rules_add_class (rules, "[a-zA-Z]", &klass, -1, &tmp_err);
     throw (error, tmp_err);
   }
 
   { /* numbers */
     SymbolClass klass = {SYMBOL_KIND_CONSTANT, };
-    _matree_rules_add_token (rules, "[0-9\\.]+", -1, &tmp_err);
+    _matcal_rules_add_token (rules, "[0-9\\.]+", -1, &tmp_err);
     throw (error, tmp_err);
-    _matree_rules_add_class (rules, "[0-9\\.]+", &klass, -1, &tmp_err);
+    _matcal_rules_add_class (rules, "[0-9\\.]+", &klass, -1, &tmp_err);
     throw (error, tmp_err);
   }
 
@@ -212,19 +207,19 @@ load_default_rules (MatreeRules* rules, GError** error)
 }
 
 /**
- * matree_rules_new_default: (constructor)
+ * matcal_rules_new_default: (constructor)
  * 
  * See return.
  * 
- * Returns: (transfer full): a #MatreeRules instance.
+ * Returns: (transfer full): a #MatcalRules instance.
  */
-MatreeRules*
-matree_rules_new_default ()
+MatcalRules*
+matcal_rules_new_default ()
 {
-  MatreeRules* rules = NULL;
+  MatcalRules* rules = NULL;
   GError* tmp_err = NULL;
 
-  rules = matree_rules_new ();
+  rules = matcal_rules_new ();
   load_default_rules (rules, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
@@ -245,7 +240,7 @@ return rules;
 
 G_GNUC_INTERNAL
 gchar**
-_matree_rules_tokenize (MatreeRules* self, const gchar* input, gssize length, GError** error)
+_matcal_rules_tokenize (MatcalRules* self, const gchar* input, gssize length, GError** error)
 {
   const gchar* end = NULL;
   g_return_val_if_fail (input != NULL, NULL);
@@ -289,7 +284,7 @@ _matree_rules_tokenize (MatreeRules* self, const gchar* input, gssize length, GE
           if (start > last)
             {
               subtoks =
-              _matree_rules_tokenize (self, input + last, start - last, &tmp_err);
+              _matcal_rules_tokenize (self, input + last, start - last, &tmp_err);
               if (G_UNLIKELY (tmp_err != NULL))
                 {
                   g_propagate_error (error, tmp_err);
@@ -328,7 +323,7 @@ _matree_rules_tokenize (MatreeRules* self, const gchar* input, gssize length, GE
       if (length > last)
         {
           subtoks =
-          _matree_rules_tokenize (self, input + last, length - last, &tmp_err);
+          _matcal_rules_tokenize (self, input + last, length - last, &tmp_err);
           if (G_UNLIKELY (tmp_err != NULL))
             {
               g_propagate_error (error, tmp_err);
@@ -359,7 +354,7 @@ return (gchar**)
 
 G_GNUC_INTERNAL
 SymbolClass*
-_matree_rules_classify (MatreeRules* self, const gchar* input, GError** error)
+_matcal_rules_classify (MatcalRules* self, const gchar* input, GError** error)
 {
   const gchar* end = NULL;
   g_return_val_if_fail (input != NULL, NULL);
@@ -395,7 +390,7 @@ return NULL;
 /* lexer & classifier adders */
 
 static inline void
-_matree_rules_tokenize_add (MatreeRules* self, GRegex* regex, gssize pos)
+_matcal_rules_tokenize_add (MatcalRules* self, GRegex* regex, gssize pos)
 {
   pos = (pos == -1) ? self->tokenize->len : pos;
   g_ptr_array_insert ((gpointer) self->tokenize, pos, g_regex_ref (regex));
@@ -403,7 +398,7 @@ _matree_rules_tokenize_add (MatreeRules* self, GRegex* regex, gssize pos)
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_token (MatreeRules* self, const gchar* expr, gssize pos, GError** error)
+_matcal_rules_add_token (MatcalRules* self, const gchar* expr, gssize pos, GError** error)
 {
   GError* tmp_err = NULL;
   GRegex* regex = NULL;
@@ -417,12 +412,12 @@ _matree_rules_add_token (MatreeRules* self, const gchar* expr, gssize pos, GErro
       return;
     }
 
-  _matree_rules_tokenize_add (self, regex, pos);
+  _matcal_rules_tokenize_add (self, regex, pos);
   _g_regex_unref0 (regex);
 }
 
 static inline void
-_matree_rules_classify_add (MatreeRules* self, GRegex* regex, const SymbolClass* klass, gssize pos)
+_matcal_rules_classify_add (MatcalRules* self, GRegex* regex, const SymbolClass* klass, gssize pos)
 {
   SymbolClassEntry entry = {0};
   pos = (pos == -1) ? self->classes->len : pos;
@@ -433,7 +428,7 @@ _matree_rules_classify_add (MatreeRules* self, GRegex* regex, const SymbolClass*
 
 G_GNUC_INTERNAL
 void
-_matree_rules_add_class (MatreeRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error)
+_matcal_rules_add_class (MatcalRules* self, const gchar* expr, const SymbolClass* klass, gssize pos, GError** error)
 {
   GError* tmp_err = NULL;
   GRegex* regex = NULL;
@@ -447,24 +442,22 @@ _matree_rules_add_class (MatreeRules* self, const gchar* expr, const SymbolClass
       return;
     }
 
-  _matree_rules_classify_add (self, regex, klass, pos);
+  _matcal_rules_classify_add (self, regex, klass, pos);
   _g_regex_unref0 (regex);
 }
 
 gboolean
-matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_args)
+matcal_rules_add_function (MatcalRules* rules, const gchar* name, guint n_args)
 {
-  g_return_val_if_fail (MATREE_IS_RULES (rules), FALSE);
+  g_return_val_if_fail (MATCAL_IS_RULES (rules), FALSE);
   g_return_val_if_fail (name != NULL, FALSE);
-  g_return_val_if_fail (!g_hash_table_lookup (rules->registry, name), FALSE);
-  g_return_val_if_fail (n_args < 1000 /* this is arbitrary */, FALSE);
-  MatreeRules* self = (rules);
+  MatcalRules* self = (rules);
   GError* tmp_err = NULL;
 
   const FunctionClass fnclass = {n_args};
   const SymbolClass klass = {SYMBOL_KIND_FUNCTION, .fnclass = fnclass};
 
-  _matree_rules_add_token (self, name, self->fn_token, &tmp_err);
+  _matcal_rules_add_token (self, name, self->fn_token, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
       g_warning
@@ -478,7 +471,7 @@ matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_a
       return FALSE;
     }
 
-  _matree_rules_add_class (self, name, &klass, self->fn_class, &tmp_err);
+  _matcal_rules_add_class (self, name, &klass, self->fn_class, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
       g_warning
@@ -491,6 +484,4 @@ matree_rules_register_function (MatreeRules* rules, const gchar* name, guint n_a
       _g_error_free0 (tmp_err);
       return FALSE;
     }
-
-  g_hash_table_insert (self->registry, g_strdup (name), GINT_TO_POINTER (TRUE));
 }
