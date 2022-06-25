@@ -15,21 +15,18 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATLIB__
-#define __LIBMATLIB__ 1
-#include <libmatcal.h>
-
-#include <arithmetics.h>
-
-#if __cplusplus
-extern "C" {
-#endif // __cplusplus
+#include <config.h>
+#include <libmatlib.h>
 
 void
-matlib_setup (MatcalCore* core);
-
-#if __cplusplus
+matlib_setup (MatcalCore* core)
+{
+  matcal_core_pushcfunction (core, matlib_add);
+  matcal_core_setglobal (core, "+");
+  matcal_core_pushcfunction (core, matlib_sub);
+  matcal_core_setglobal (core, "-");
+  matcal_core_pushcfunction (core, matlib_mul);
+  matcal_core_setglobal (core, "*");
+  matcal_core_pushcfunction (core, matlib_div);
+  matcal_core_setglobal (core, "/");
 }
-#endif // __cplusplus
-
-#endif // __LIBMATLIB__

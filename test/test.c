@@ -36,6 +36,8 @@ fixture_set_up (Fixture* fixture, gconstpointer argument)
 {
   fixture->core = matcal_core_new ();
   fixture->rules = matree_rules_new_default ();
+
+  matlib_setup (fixture->core);
 }
 
 static void
@@ -228,22 +230,14 @@ matcal_test_expression_parse (Fixture* fixture, gpointer shared)
   MatreeExpression* exp = NULL;
   GError* tmp_err = NULL;
 
-  exp = matree_expression_new (fixture->rules, "3+4*2/(1-5)^2^3", &tmp_err);
+  exp = matree_expression_new (fixture->rules, "(3+4)*2/(1-5)", &tmp_err);
   g_assert_no_error (tmp_err);
   matree_expression_compile (exp, &tmp_err);
   g_assert_no_error (tmp_err);
   matree_expression_push (exp, fixture->core);
-  matcal_core_call (fixture->core, 0, 0);
-  _g_object_unref0 (exp);
-
-  matree_rules_register_function (fixture->rules, "sin", 1);
-  matree_rules_register_function (fixture->rules, "cos", 1);
-  matree_rules_register_function (fixture->rules, "tan", 1);
-  matree_rules_register_function (fixture->rules, "max", 2);
-  matree_rules_register_function (fixture->rules, "min", 2);
-
-  exp = matree_expression_new (fixture->rules, "sin ( max ( 2, 3 ) / 3 * p )", &tmp_err);
-  g_assert_no_error (tmp_err);
+  matcal_core_call (fixture->core, 0, 1);
+  g_assert (matcal_core_tonumber_double (fixture->core, -1) == -3.5);
+  matcal_core_pop (fixture->core, 1);
   _g_object_unref0 (exp);
 }
 

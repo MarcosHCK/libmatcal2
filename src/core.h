@@ -41,6 +41,10 @@ matcal_core_gettop (MatcalCore* core);
 void
 matcal_core_settop (MatcalCore* core, int newtop);
 void
+matcal_core_setglobal (MatcalCore* core, const gchar* name);
+void
+matcal_core_getglobal (MatcalCore* core, const gchar* name);
+void
 matcal_core_pushvalue (MatcalCore* core, int index);
 void
 matcal_core_pushupvalue (MatcalCore* core, int index);
@@ -96,6 +100,8 @@ void
 matcal_core_pushcfunction (MatcalCore* core, MatcalCFunction cclosure);
 void
 matcal_core_pushclosure (MatcalCore* core, MatcalCFunction cclosure, guint n_upvalues);
+gboolean
+matcal_core_isfunction (MatcalCore* core, int index);
 MatcalClosureResult
 matcal_core_call (MatcalCore* core, int n_args, int n_results);
 

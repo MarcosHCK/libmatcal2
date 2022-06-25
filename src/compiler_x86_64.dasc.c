@@ -119,18 +119,16 @@ return FALSE;
 |.define core, [rsp+8*0]
 #endif // __DASC__
 
-static int
-namedfn (MatcalCore* core)
-{
-  matcal_core_pushnumber_uint (core, 0);
-return 1;
-}
-
 static void
 pushnamedfn (MatcalCore* core, const gchar* name)
 {
   g_print ("push '%s'\r\n", name);
-  matcal_core_pushcfunction (core, namedfn);
+  matcal_core_getglobal (core, name);
+  if (!matcal_core_isfunction (core, -1))
+    {
+      g_error ("global '%s' is not a function", name);
+      g_assert_not_reached ();
+    }
 }
 
 static void

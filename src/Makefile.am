@@ -110,6 +110,7 @@ EXTRA_DIST+=\
 
 libmatlib_la_SOURCES=\
 	arithmetics.c \
+	matlib.c \
 	$(VOID)
 libmatlib_la_CFLAGS=\
 	$(GIO_CFLAGS) \

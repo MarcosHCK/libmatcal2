@@ -39,6 +39,7 @@ typedef struct _MatcalClosureClass MatcalClosureClass;
 struct _MatcalCore
 {
   GObject parent_instance;
+  GHashTable* globals;
   MatcalObject* head;
   gint top;
 };
@@ -69,6 +70,7 @@ static void
 matcal_core_class_finalize (GObject* pself)
 {
   MatcalCore* self = MATCAL_CORE (pself);
+  g_hash_table_unref (self->globals);
 G_OBJECT_CLASS (matcal_core_parent_class)->finalize (pself);
 }
 
@@ -76,12 +78,13 @@ static void
 matcal_core_class_dispose (GObject* pself)
 {
   MatcalCore* self = MATCAL_CORE (pself);
+  g_hash_table_remove_all (self->globals);
   MatcalObject* head = self->head;
   while (head != NULL)
     {
       head = matcal_object_remove (head, head);
     }
-G_OBJECT_CLASS (matcal_core_parent_class)->finalize (pself);
+G_OBJECT_CLASS (matcal_core_parent_class)->dispose (pself);
 }
 
 static void
@@ -96,6 +99,7 @@ matcal_core_class_init (MatcalCoreClass* klass)
 static void
 matcal_core_init (MatcalCore* self)
 {
+  self->globals = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, matcal_object_unref);
   self->head = NULL;
   self->top = 0;
 }
@@ -300,10 +304,63 @@ matcal_core_settop (MatcalCore* core, int newtop)
 }
 
 /**
+ * matcal_core_setglobal:
+ * @core: #MatcalCore instance.
+ * @name: global object's name.
+ * 
+ * Sets element at top of stack as
+ * global named by @name.
+ */
+void
+matcal_core_setglobal (MatcalCore* core, const gchar* name)
+{
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  g_return_if_fail (matcal_core_gettop (core) >= 1);
+  g_return_if_fail (name != NULL);
+  MatcalCore* self = (core);
+  MatcalObject* object;
+
+  object = _matcal_core_peek (core, -1);
+  object = matcal_object_ref (object);
+  matcal_core_pop (core, 1);
+
+  g_hash_table_insert (self->globals, g_strdup (name), object);
+}
+
+/**
+ * matcal_core_getglobal:
+ * @core: #MatcalCore instance.
+ * @name: global object's name.
+ * 
+ * Gets global object named by @name
+ * and pushes it onto stack if exists,
+ * otherwise pushes nil.
+ */
+void
+matcal_core_getglobal (MatcalCore* core, const gchar* name)
+{
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  g_return_if_fail (name != NULL);
+  MatcalCore* self = (core);
+  MatcalObject* object;
+  gboolean has;
+
+  has =
+  g_hash_table_lookup_extended (self->globals, name, NULL, (gpointer*) &object);
+  if (!has)
+    matcal_core_pushnil (core);
+  else
+    {
+      object = matcal_object_clone (object);
+      _matcal_core_push (core, object);
+    }
+}
+
+/**
  * matcal_core_pushvalue:
  * @core: #MatcalCore instance.
  * @index: value's index.
- * 
+ *
  * Pushes onto stack the value at
  * index @index.
  */
@@ -508,6 +565,24 @@ matcal_core_pushclosure (MatcalCore* core, MatcalCFunction cclosure, guint n_upv
 
   _matcal_core_push (core, closure);
   matcal_object_unref (closure);
+}
+
+/**
+ * matcal_core_isfunction:
+ * @core: #MatcalCore instance.
+ * @index: index to inspect on.
+ * 
+ * See return.
+ * 
+ * Returns: whether object at @index is a function.
+ */
+gboolean
+matcal_core_isfunction (MatcalCore* core, int index)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), FALSE);
+  g_return_val_if_fail ((index = validate_index (index)) >= 0, FALSE);
+  MatcalObject* value = _matcal_core_peek (core, index);
+return MATCAL_IS_CLOSURE (value);
 }
 
 /**
