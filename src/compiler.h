@@ -17,17 +17,25 @@
  */
 #ifndef __MATREE_COMPILER__
 #define __MATREE_COMPILER__ 1
-#include <core.h>
 #include <node.h>
+
+typedef struct _JitCallback JitCallback;
+
+struct _JitCallback
+{
+  gpointer start;
+  gpointer block;
+  gsize blocksz;
+};
 
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-MatcalCFunction
+JitCallback*
 libjit_compile (AstNode* ast, GError** error);
 void
-libjit_free (MatcalCFunction function);
+libjit_free (JitCallback* callback);
 
 #if __cplusplus
 }

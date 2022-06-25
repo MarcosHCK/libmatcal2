@@ -42,7 +42,7 @@ struct _MatreeExpression
   GObject parent;
 
   AstNode* ast;
-  MatcalCFunction cclosure;
+  JitCallback* callback;
 
   gchar* infix;
   MatreeRules* rules;
@@ -398,7 +398,7 @@ static void
 matree_expression_class_finalize (GObject* pself)
 {
   MatreeExpression* self = MATREE_EXPRESSION (pself);
-  _libjit_free0 (self->cclosure);
+  _libjit_free0 (self->callback);
   _ast_node_free0 (self->ast);
   _g_free0 (self->infix);
 G_OBJECT_CLASS (matree_expression_parent_class)->finalize (pself);
@@ -541,18 +541,18 @@ matree_expression_compile (MatreeExpression* expression, GError** error)
 {
   g_return_val_if_fail (MATREE_IS_EXPRESSION (expression), FALSE);
   g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-  MatcalCFunction cclosure = NULL;
+  JitCallback* callback = NULL;
   GError* tmp_err = NULL;
 
-  cclosure = libjit_compile (expression->ast, &tmp_err);
+  callback = libjit_compile (expression->ast, &tmp_err);
   if (G_UNLIKELY (tmp_err != NULL))
     {
       g_propagate_error (error, tmp_err);
-      _libjit_free0 (cclosure);
+      _libjit_free0 (callback);
       return FALSE;
     }
 
-  expression->cclosure = cclosure;
+  expression->callback = callback;
 return TRUE;
 }
 
@@ -573,6 +573,6 @@ matree_expression_push (MatreeExpression* expression, MatcalCore* core)
   g_return_if_fail (MATCAL_IS_CORE (core));
   MatreeExpression* self = (expression);
 
-  g_return_if_fail (self->cclosure);
-  matcal_core_pushcfunction (core, self->cclosure);
+  g_return_if_fail (self->callback);
+  matcal_core_pushcfunction (core, self->callback->start);
 }

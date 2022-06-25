@@ -216,6 +216,7 @@ libjit_la_LIBADD=\
 	$(GIO_LIBS) \
 	$(GLIB_LIBS) \
 	$(GOBJECT_LIBS) \
+	libmatcal.la \
 	libast.la \
 	$(VOID)
 libjit_la_LDFLAGS=\

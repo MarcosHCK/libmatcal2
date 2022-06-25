@@ -20,5 +20,11 @@
 #include <glib.h>
 
 #if __DASC__
+
+|.macro invoke, name
+ | mov64 rax, ((guintptr) name)
+ | call rax
+|.endmacro
+
 #endif // __DASC__
 #endif // __ARCH_MACROS__

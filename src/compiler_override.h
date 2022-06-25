@@ -45,7 +45,7 @@
 # if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #   define MAP_ANONYMOUS MAP_ANON
 # endif // !MAP_ANONYMOUS && MAP_ANON
-#endif // G_OS_WINDOWS
+#endif // G_OS_WINDOWS 
 
 #include <compiler.h>
 #endif // __DYNASM_OVERRIDE__
