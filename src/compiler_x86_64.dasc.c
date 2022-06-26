@@ -155,7 +155,6 @@ compile (AstNode* node, AstStat* q)
 #if DEVELOPER
     g_assert (has);
 #endif // DEVELOPER
-
 #if __DASC__
 # ifdef G_OS_WIN32
     | mov rcx, core
@@ -170,6 +169,7 @@ compile (AstNode* node, AstStat* q)
     | invoke matcal_core_pushnumber_string
 #endif // __DASC__
     break;
+
   case AST_SYMBOL_VARIABLE:
 #if DEVELOPER
     has =
@@ -179,7 +179,6 @@ compile (AstNode* node, AstStat* q)
 #if DEVELOPER
     g_assert (has);
 #endif // DEVELOPER
-
 #if __DASC__
 # ifdef G_OS_WIN32
     | mov rcx, core
@@ -192,6 +191,7 @@ compile (AstNode* node, AstStat* q)
     | invoke matcal_core_pushvalue
 #endif // __DASC__
     break;
+
   case AST_SYMBOL_FUNCTION:
 #if DEVELOPER
     has =
@@ -201,7 +201,6 @@ compile (AstNode* node, AstStat* q)
 #if DEVELOPER
     g_assert (has);
 #endif // DEVELOPER
-
 #if __DASC__
 # ifdef G_OS_WIN32
     | mov rcx, core

@@ -71,6 +71,8 @@ struct _MatcalRulesClass
 };
 
 G_DEFINE_FINAL_TYPE (MatcalRules, matcal_rules, G_TYPE_OBJECT);
+G_STATIC_ASSERT (MATCAL_ASSOC_LEFT == OPERATOR_ASSOC_LEFT);
+G_STATIC_ASSERT (MATCAL_ASSOC_RIGHT == OPERATOR_ASSOC_RIGHT);
 
 static void
 matcal_rules_class_finalize (GObject* pself)
@@ -151,35 +153,6 @@ load_default_rules (MatcalRules* rules, GError** error)
     {
       SymbolClass klass = {SYMBOL_KIND_PARENTHESIS, };
       _matcal_rules_add_class (rules, "[\\(\\)]", &klass, -1, &tmp_err);
-      throw (error, tmp_err);
-    }
-
-    {
-      SymbolClass klass = {SYMBOL_KIND_OPERATOR, };
-      const OperatorClass pwclass = {OPERATOR_ASSOC_RIGHT, 4, FALSE};
-      const OperatorClass mlclass = {OPERATOR_ASSOC_LEFT, 3, FALSE};
-      const OperatorClass dvclass = {OPERATOR_ASSOC_LEFT, 3, FALSE};
-      const OperatorClass sbclass = {OPERATOR_ASSOC_LEFT, 2, FALSE};
-      const OperatorClass plclass = {OPERATOR_ASSOC_LEFT, 2, FALSE};
-
-      klass.opclass = pwclass;
-      _matcal_rules_add_class (rules, "[\\^]", &klass, -1, &tmp_err);
-      throw (error, tmp_err);
-
-      klass.opclass = mlclass;
-      _matcal_rules_add_class (rules, "[\\*]", &klass, -1, &tmp_err);
-      throw (error, tmp_err);
-
-      klass.opclass = dvclass;
-      _matcal_rules_add_class (rules, "[\\/]", &klass, -1, &tmp_err);
-      throw (error, tmp_err);
-
-      klass.opclass = sbclass;
-      _matcal_rules_add_class (rules, "[\\-]", &klass, -1, &tmp_err);
-      throw (error, tmp_err);
-
-      klass.opclass = plclass;
-      _matcal_rules_add_class (rules, "[\\+]", &klass, -1, &tmp_err);
       throw (error, tmp_err);
     }
   }
@@ -444,6 +417,32 @@ _matcal_rules_add_class (MatcalRules* self, const gchar* expr, const SymbolClass
 
   _matcal_rules_classify_add (self, regex, klass, pos);
   _g_regex_unref0 (regex);
+}
+
+gboolean
+matcal_rules_add_operator (MatcalRules* rules, const gchar* name, gboolean assoc, guint precedence, gboolean unary)
+{
+  g_return_val_if_fail (MATCAL_IS_RULES (rules), FALSE);
+  g_return_val_if_fail (name != NULL, FALSE);
+  MatcalRules* self = (rules);
+  GError* tmp_err = NULL;
+
+  const OperatorClass opclass = {assoc, precedence, unary};
+  const SymbolClass klass = {SYMBOL_KIND_OPERATOR, .opclass = opclass};
+
+  _matcal_rules_add_class (self, name, &klass, (self->fn_class++ - 1), &tmp_err);
+  if (G_UNLIKELY (tmp_err != NULL))
+    {
+      g_warning
+      ("(%s): %s: %i: %s",
+       G_STRLOC,
+       g_quark_to_string
+       (tmp_err->domain),
+       tmp_err->code,
+       tmp_err->message);
+      _g_error_free0 (tmp_err);
+      return FALSE;
+    }
 }
 
 gboolean

@@ -24,6 +24,12 @@
 #define MATCAL_IS_RULES(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MATCAL_TYPE_RULES))
 typedef struct _MatcalRules MatcalRules;
 
+enum
+{
+  MATCAL_ASSOC_LEFT = 0,
+  MATCAL_ASSOC_RIGHT,
+};
+
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -36,7 +42,9 @@ matcal_rules_new ();
 MatcalRules*
 matcal_rules_new_default ();
 gboolean
-matcal_rules_register_function (MatcalRules* rules, const gchar* name, guint n_args);
+matcal_rules_add_operator (MatcalRules* rules, const gchar* name, gboolean assoc, guint precedence, gboolean unary);
+gboolean
+matcal_rules_add_function (MatcalRules* rules, const gchar* name, guint n_args);
 
 #if __cplusplus
 }

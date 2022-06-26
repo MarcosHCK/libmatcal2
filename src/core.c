@@ -66,9 +66,31 @@ struct _MatcalClosureClass
   MatcalObjectClass parent_class;
 };
 
+enum
+{
+  prop_0,
+  prop_rules,
+  prop_number,
+};
 
+static GParamSpec* properties [prop_number] = {0};
 G_DEFINE_FINAL_TYPE (MatcalCore, matcal_core, G_TYPE_OBJECT);
 G_DEFINE_FINAL_TYPE (MatcalClosure, matcal_closure, MATCAL_TYPE_OBJECT);
+
+static void
+matcal_core_class_get_property (GObject* pself, guint prop_id, GValue* value, GParamSpec* pspec)
+{
+  MatcalCore* self = MATCAL_CORE (pself);
+  switch (prop_id)
+  {
+  case prop_rules:
+    g_value_set_object (value, matcal_core_get_rules (self));
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (pself, prop_id, pspec);
+    break;
+  }
+}
 
 static void
 matcal_core_class_finalize (GObject* pself)
@@ -94,8 +116,12 @@ matcal_core_class_init (MatcalCoreClass* klass)
 {
   GObjectClass* oclass = G_OBJECT_CLASS (klass);
 
+  oclass->get_property = matcal_core_class_get_property;
   oclass->finalize = matcal_core_class_finalize;
   oclass->dispose = matcal_core_class_dispose;
+
+  properties [prop_rules] = g_param_spec_object ("rules", "rules", "rules", MATCAL_TYPE_RULES, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_properties (G_OBJECT_CLASS (klass), prop_number, properties);
 }
 
 static void
@@ -260,6 +286,19 @@ matcal_core_new ()
 }
 
 /**
+ * matcal_core_get_rules:
+ * @core: #MatcalCore instance.
+ * Gets #MatcalCore::rules property.
+ * Returns: (transfer none): #MatcalCore::rules value.
+ */
+MatcalRules*
+matcal_core_get_rules (MatcalCore* core)
+{
+  g_return_val_if_fail (MATCAL_IS_CORE (core), NULL);
+return core->rules;
+}
+
+/**
  * matcal_core_gettop:
  * @core: #MatcalCore instance.
  * 
@@ -357,6 +396,27 @@ matcal_core_getglobal (MatcalCore* core, const gchar* name)
       object = matcal_object_clone (object);
       _matcal_core_push (core, object);
     }
+}
+
+/**
+ * matcal_core_register_function:
+ * @core: #MatcalCore instance.
+ * @name: name to register function as (ie: 'sin').
+ * @n_args: number of arguments the function has.
+ * 
+ * Register a function into @core instance. It is,
+ * register a global identifier that can be called
+ * inside a mathematical expression (ie: 'sin (x)')
+ * Function if taken from top of stack.
+ */
+void
+matcal_core_register_function (MatcalCore* core, const gchar* name, guint n_args)
+{
+  g_return_if_fail (MATCAL_IS_CORE (core));
+  g_return_if_fail (name != NULL);
+  MatcalCore* self = (core);
+  matcal_rules_add_function (self->rules, name, n_args);
+  matcal_core_setglobal (core, name);
 }
 
 /**

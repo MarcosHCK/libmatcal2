@@ -17,7 +17,7 @@
  */
 #ifndef __MATCAL_CORE__
 #define __MATCAL_CORE__ 1
-#include <glib-object.h>
+#include <rules.h>
 
 #define MATCAL_TYPE_CORE (matcal_core_get_type ())
 #define MATCAL_CORE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MATCAL_TYPE_CORE, MatcalCore))
@@ -36,6 +36,8 @@ matcal_core_get_type (void) G_GNUC_CONST;
 
 MatcalCore*
 matcal_core_new ();
+MatcalRules*
+matcal_core_get_rules (MatcalCore* core);
 int
 matcal_core_gettop (MatcalCore* core);
 void
@@ -44,6 +46,8 @@ void
 matcal_core_setglobal (MatcalCore* core, const gchar* name);
 void
 matcal_core_getglobal (MatcalCore* core, const gchar* name);
+void
+matcal_core_register_function (MatcalCore* core, const gchar* name, guint n_args);
 void
 matcal_core_pushvalue (MatcalCore* core, int index);
 void

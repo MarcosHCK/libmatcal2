@@ -435,9 +435,6 @@ matcal_expression_class_get_property (GObject* pself, guint prop_id, GValue* val
   MatcalExpression* self = MATCAL_EXPRESSION (pself);
   switch (prop_id)
   {
-  case prop_rules:
-    g_value_set_object (value, matcal_expression_get_rules (self));
-    break;
   case prop_infix:
     g_value_set_boxed (value, matcal_expression_get_infix (self));
     break;
@@ -457,7 +454,7 @@ matcal_expression_class_init (MatcalExpressionClass* klass)
   oclass->finalize = matcal_expression_class_finalize;
   oclass->dispose = matcal_expression_class_dispose;
 
-  properties [prop_rules] = g_param_spec_object ("rules", "rules", "rules", MATCAL_TYPE_RULES, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+  properties [prop_rules] = g_param_spec_object ("rules", "rules", "rules", MATCAL_TYPE_RULES, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   properties [prop_infix] = g_param_spec_boxed ("infix", "infix", "infix", G_TYPE_BYTES, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   g_object_class_install_properties (G_OBJECT_CLASS (klass), prop_number, properties);
 }
@@ -488,17 +485,6 @@ matcal_expression_new (MatcalRules* rules, GBytes* infix, GError** error)
    "rules", rules,
    "infix", infix,
    NULL);
-}
-
-/**
- * matcal_expression_get_rules:
- * Returns: (transfer none):
- */
-MatcalRules*
-matcal_expression_get_rules (MatcalExpression* expression)
-{
-  g_return_val_if_fail (MATCAL_IS_EXPRESSION (expression), NULL);
-return expression->rules;
 }
 
 /**

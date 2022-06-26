@@ -21,12 +21,22 @@
 void
 matlib_setup (MatcalCore* core)
 {
+  MatcalRules* rules = NULL;
+  rules = matcal_core_get_rules (core);
+
+  matcal_rules_add_operator (rules, "[\\+]", MATCAL_ASSOC_LEFT, 2, 0);
   matcal_core_pushcfunction (core, matlib_add);
   matcal_core_setglobal (core, "+");
+
+  matcal_rules_add_operator (rules, "[\\-]", MATCAL_ASSOC_LEFT, 2, 0);
   matcal_core_pushcfunction (core, matlib_sub);
   matcal_core_setglobal (core, "-");
+
+  matcal_rules_add_operator (rules, "[\\*]", MATCAL_ASSOC_LEFT, 3, 0);
   matcal_core_pushcfunction (core, matlib_mul);
   matcal_core_setglobal (core, "*");
+
+  matcal_rules_add_operator (rules, "[\\/]", MATCAL_ASSOC_LEFT, 3, 0);
   matcal_core_pushcfunction (core, matlib_div);
   matcal_core_setglobal (core, "/");
 }

@@ -47,8 +47,6 @@ matcal_expression_get_type (void) G_GNUC_CONST;
 
 MatcalExpression*
 matcal_expression_new (MatcalRules* rules, GBytes* infix, GError** error);
-MatcalRules*
-matcal_expression_get_rules (MatcalExpression* expression);
 GBytes*
 matcal_expression_get_infix (MatcalExpression* expression);
 gboolean
