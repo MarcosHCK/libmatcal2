@@ -58,6 +58,9 @@ struct _MatcalNumberClass
   MatcalObjectClass parent_class;
 };
 
+int
+matcal_number_cmp (MatcalNumber* number1, MatcalNumber* number2);
+
 #if __cplusplus
 }
 #endif // __cplusplus

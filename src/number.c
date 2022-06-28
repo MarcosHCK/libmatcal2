@@ -19,8 +19,12 @@
 #include <coreext.h>
 #include <numberext.h>
 
-static inline MatcalNumber*
-matcal_number_new (MatcalNumberKind kind);
+G_GNUC_INTERNAL
+MatcalNumber*
+_matcal_number_new (MatcalNumberKind kind);
+G_GNUC_INTERNAL
+void
+_matcal_number_transform (MatcalNumberPrivate* dst, MatcalNumberPrivate* src);
 
 G_DEFINE_QUARK (matcal-number-error-quark, matcal_number_error);
 G_DEFINE_TYPE_WITH_PRIVATE (MatcalNumber, matcal_number, MATCAL_TYPE_OBJECT);
@@ -30,7 +34,7 @@ matcal_number_class_clone (MatcalObject* pself)
 {
   MatcalNumber* self1 = MATCAL_NUMBER (pself);
   MatcalNumberPrivate* priv1 = self1->priv;
-  MatcalNumber* self2 = matcal_number_new (priv1->kind);
+  MatcalNumber* self2 = _matcal_number_new (priv1->kind);
   MatcalNumberPrivate* priv2 = self2->priv;
 
   switch (priv1->kind)
@@ -97,8 +101,9 @@ matcal_number_init (MatcalNumber* self)
 
 /* public API */
 
-static inline MatcalNumber*
-matcal_number_new (MatcalNumberKind kind)
+G_GNUC_INTERNAL
+MatcalNumber*
+_matcal_number_new (MatcalNumberKind kind)
 {
   MatcalNumber* number;
   number = matcal_object_new (MATCAL_TYPE_NUMBER);
@@ -120,6 +125,103 @@ return number;
 }
 
 /**
+ * matcal_number_cmp:
+ * @number1: first #MatcalNumber instance.
+ * @number2: second #MatcalNumber instance.
+ *
+ * Compares two numbers.
+ *
+ * Returns: (number1 > number2) ? 1 : -1, 0 if equals.
+ */
+int
+matcal_number_cmp (MatcalNumber* number1, MatcalNumber* number2)
+{
+  g_return_val_if_fail (MATCAL_IS_NUMBER (number1), 0);
+  g_return_val_if_fail (MATCAL_IS_NUMBER (number2), 0);
+  MatcalNumberPrivate* priv1 = number1->priv;
+  MatcalNumberPrivate* priv2 = number2->priv;
+  MatcalNumberKind kind;
+
+  if (priv1->kind == priv2->kind)
+    {
+      switch (priv1->kind)
+      {
+      case MATCAL_NUMBER_KIND_INTEGER:
+        return mpz_cmp (priv1->integer, priv2->integer);
+      case MATCAL_NUMBER_KIND_RATIONAL:
+        return mpq_cmp (priv1->rational, priv2->rational);
+      case MATCAL_NUMBER_KIND_REAL:
+        return mpf_cmp (priv1->real, priv2->real);
+      }
+    }
+  else
+    {
+      MatcalNumberKind kinds [2] = { priv1->kind, priv2->kind};
+      MatcalNumberPrivate* srcs [2] = { priv1, priv2 };
+      MatcalNumberPrivate* privs [2] = { NULL, NULL };
+      MatcalNumberPrivate statics [2] = {0};
+      gint i, fact;
+
+      kind = matcal_number_kind_equalize (kinds [0], kinds [1]);
+
+      for (i = 0; i < 2; i++)
+      if (kinds [i] == kind)
+        privs [i] = srcs [i];
+      else
+        {
+          privs [i] = & statics [i];
+          switch (kind)
+          {
+          case MATCAL_NUMBER_KIND_INTEGER:
+            mpz_init (privs [i]->integer);
+            break;
+          case MATCAL_NUMBER_KIND_RATIONAL:
+            mpq_init (privs [i]->rational);
+            break;
+          case MATCAL_NUMBER_KIND_REAL:
+            mpf_init (privs [i]->real);
+            break;
+          }
+
+          _matcal_number_transform (privs [i], srcs [i]);
+        }
+
+      switch (kind)
+      {
+      case MATCAL_NUMBER_KIND_INTEGER:
+        fact = mpz_cmp (privs [0]->integer, privs [1]->integer);
+        break;
+      case MATCAL_NUMBER_KIND_RATIONAL:
+        fact = mpq_cmp (privs [0]->rational, privs [1]->rational);
+        break;
+      case MATCAL_NUMBER_KIND_REAL:
+        fact = mpf_cmp (privs [0]->real, privs [1]->real);
+        break;
+      }
+
+      for (i = 0; i < 2; i++)
+      if (kinds[i] != kind)
+        {
+          switch (kind)
+          {
+          case MATCAL_NUMBER_KIND_INTEGER:
+            mpz_clear (privs [i]->integer);
+            break;
+          case MATCAL_NUMBER_KIND_RATIONAL:
+            mpq_clear (privs [i]->rational);
+            break;
+          case MATCAL_NUMBER_KIND_REAL:
+            mpf_clear (privs [i]->real);
+            break;
+          }
+        }
+
+      return fact;
+    }
+return 0;
+}
+
+/**
  * matcal_core_pushnumber_uint:
  * @core: #MatcalNumber instance.
  * @value: numeric value.
@@ -131,7 +233,7 @@ void
 matcal_core_pushnumber_uint (MatcalCore* core, unsigned int value)
 {
   g_return_if_fail (MATCAL_IS_CORE (core));
-  MatcalNumber* n = matcal_number_new (MATCAL_NUMBER_KIND_INTEGER);
+  MatcalNumber* n = _matcal_number_new (MATCAL_NUMBER_KIND_INTEGER);
   mpz_set_ui (n->priv->integer, value);
   _matcal_core_push (core, n);
   matcal_object_unref (n);
@@ -194,7 +296,7 @@ void
 matcal_core_pushnumber_double (MatcalCore* core, double value)
 {
   g_return_if_fail (MATCAL_IS_CORE (core));
-  MatcalNumber* n = matcal_number_new (MATCAL_NUMBER_KIND_REAL);
+  MatcalNumber* n = _matcal_number_new (MATCAL_NUMBER_KIND_REAL);
   mpf_set_d (n->priv->real, value);
   _matcal_core_push (core, n);
   matcal_object_unref (n);
@@ -263,7 +365,7 @@ matcal_core_pushnumber_string (MatcalCore* core, const gchar* value, int base)
     {
     case '.':
       {
-        number = matcal_number_new (MATCAL_NUMBER_KIND_RATIONAL);
+        number = _matcal_number_new (MATCAL_NUMBER_KIND_RATIONAL);
         num = mpq_numref (number->priv->rational);
         den = mpq_denref (number->priv->rational);
 
@@ -320,7 +422,7 @@ matcal_core_pushnumber_string (MatcalCore* core, const gchar* value, int base)
       break;
     case '/':
       {
-        number = matcal_number_new (MATCAL_NUMBER_KIND_RATIONAL);
+        number = _matcal_number_new (MATCAL_NUMBER_KIND_RATIONAL);
         mpq_set_str (number->priv->rational, value, base);
         mpq_canonicalize (number->priv->rational);
         _matcal_core_push (core, number);
@@ -332,7 +434,7 @@ matcal_core_pushnumber_string (MatcalCore* core, const gchar* value, int base)
   }
   while ((val = g_utf8_next_char (val)) != NULL);
 
-  number = matcal_number_new (MATCAL_NUMBER_KIND_INTEGER);
+  number = _matcal_number_new (MATCAL_NUMBER_KIND_INTEGER);
   mpz_set_str (number->priv->integer, value, base);
   _matcal_core_push (core, number);
   matcal_object_unref (number);
@@ -401,7 +503,7 @@ void
 matcal_core_pushnumber (MatcalCore* core, MatcalNumberKind kind)
 {
   g_return_if_fail (MATCAL_IS_CORE (core));
-  MatcalNumber* n = matcal_number_new (kind);
+  MatcalNumber* n = _matcal_number_new (kind);
   _matcal_core_push (core, n);
   matcal_object_unref (n);
 }

@@ -40,70 +40,58 @@ matcal_number_kind_equalize (MatcalNumberKind kind1, MatcalNumberKind kind2)
     return kind2_;
 }
 
-static inline void
-matcal_convert_z2q (MatcalCore* core, int index)
+G_GNUC_INTERNAL
+MatcalNumber*
+_matcal_number_new (MatcalNumberKind kind);
+G_GNUC_INTERNAL
+void
+_matcal_number_transform (MatcalNumberPrivate* dst, MatcalNumberPrivate* src)
 {
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_RATIONAL);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpq_set_z (result->priv->rational, number->priv->integer);
-}
-
-static inline void
-matcal_convert_z2f (MatcalCore* core, int index)
-{
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_REAL);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpf_set_z (result->priv->real, number->priv->integer);
-}
-
-static inline void
-matcal_convert_q2z (MatcalCore* core, int index)
-{
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_INTEGER);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpz_set_q (result->priv->integer, number->priv->rational);
-}
-
-static inline void
-matcal_convert_q2f (MatcalCore* core, int index)
-{
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_REAL);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpf_set_q (result->priv->real, number->priv->rational);
-}
-
-static inline void
-matcal_convert_f2z (MatcalCore* core, int index)
-{
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_INTEGER);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpz_set_f (result->priv->integer, number->priv->real);
-}
-
-static inline void
-matcal_convert_f2q (MatcalCore* core, int index)
-{
-  g_return_if_fail (MATCAL_IS_CORE (core));
-  g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_RATIONAL);
-  MatcalNumber* result = matcal_core_tonumber (core, -1);
-  mpq_set_f (result->priv->rational, number->priv->real);
+  switch (dst->kind)
+  {
+  case MATCAL_NUMBER_KIND_INTEGER:
+    switch (src->kind)
+    {
+    case MATCAL_NUMBER_KIND_INTEGER:
+      mpz_set (dst->integer, src->integer);
+      break;
+    case MATCAL_NUMBER_KIND_RATIONAL:
+      mpz_set_q (dst->integer, src->rational);
+      break;
+    case MATCAL_NUMBER_KIND_REAL:
+      mpz_set_f (dst->integer, src->real);
+      break;
+    }
+    break;
+  case MATCAL_NUMBER_KIND_RATIONAL:
+    switch (src->kind)
+    {
+    case MATCAL_NUMBER_KIND_INTEGER:
+      mpq_set_z (dst->rational, src->integer);
+      break;
+    case MATCAL_NUMBER_KIND_RATIONAL:
+      mpq_set (dst->rational, src->rational);
+      break;
+    case MATCAL_NUMBER_KIND_REAL:
+      mpq_set_f (dst->rational, src->real);
+      break;
+    }
+    break;
+  case MATCAL_NUMBER_KIND_REAL:
+    switch (src->kind)
+    {
+    case MATCAL_NUMBER_KIND_INTEGER:
+      mpf_set_z (dst->real, src->integer);
+      break;
+    case MATCAL_NUMBER_KIND_RATIONAL:
+      mpf_set_q (dst->real, src->rational);
+      break;
+    case MATCAL_NUMBER_KIND_REAL:
+      mpf_set (dst->real, src->real);
+      break;
+    }
+    break;
+  }
 }
 
 /**
@@ -119,52 +107,9 @@ matcal_core_pushnumber_as (MatcalCore* core, int index, MatcalNumberKind newkind
 {
   g_return_if_fail (MATCAL_IS_CORE (core));
   g_return_if_fail (matcal_core_isnumber (core, index));
-  MatcalNumber* number = matcal_core_tonumber (core, index);
-  MatcalNumberKind kind = number->priv->kind;
-
-  switch (kind)
-  {
-  case MATCAL_NUMBER_KIND_INTEGER:
-    switch (newkind)
-    {
-    case MATCAL_NUMBER_KIND_INTEGER:
-      matcal_core_pushvalue (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_RATIONAL:
-      matcal_convert_z2q (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_REAL:
-      matcal_convert_z2f (core, index);
-      break;
-    }
-    break;
-  case MATCAL_NUMBER_KIND_RATIONAL:
-    switch (newkind)
-    {
-    case MATCAL_NUMBER_KIND_INTEGER:
-      matcal_convert_q2z (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_RATIONAL:
-      matcal_core_pushvalue (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_REAL:
-      matcal_convert_q2f (core, index);
-      break;
-    }
-    break;
-  case MATCAL_NUMBER_KIND_REAL:
-    switch (newkind)
-    {
-    case MATCAL_NUMBER_KIND_INTEGER:
-      matcal_convert_f2z (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_RATIONAL:
-      matcal_convert_f2q (core, index);
-      break;
-    case MATCAL_NUMBER_KIND_REAL:
-      matcal_core_pushvalue (core, index);
-      break;
-    }
-    break;
-  }
+  MatcalNumber* number1 = matcal_core_tonumber (core, index);
+  MatcalNumber* number2 = _matcal_number_new (newkind);
+  _matcal_number_transform (number2->priv, number1->priv);
+  _matcal_core_push (core, number2);
+  matcal_object_unref (number2);
 }

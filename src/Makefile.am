@@ -57,6 +57,7 @@ pkginclude_HEADERS=\
 	coreext.h \
 	core.h \
 	expression.h \
+	generic.h \
 	libmatcal.h \
 	libmatcalext.h \
 	libmatlib.h \
@@ -110,6 +111,7 @@ libmatcal_la_LDFLAGS=\
 
 libmatlib_la_SOURCES=\
 	arithmetics.c \
+	generic.c \
 	setup.c \
 	$(VOID)
 libmatlib_la_CFLAGS=\

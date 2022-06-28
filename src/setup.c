@@ -24,6 +24,8 @@ matlib_setup (MatcalCore* core)
   MatcalRules* rules = NULL;
   rules = matcal_core_get_rules (core);
 
+  /* arithmetic operators */
+
   matcal_rules_add_operator (rules, "[\\+]", MATCAL_ASSOC_LEFT, 2, 0);
   matcal_core_pushcfunction (core, matlib_add);
   matcal_core_setglobal (core, "+");
@@ -39,4 +41,12 @@ matlib_setup (MatcalCore* core)
   matcal_rules_add_operator (rules, "[\\/]", MATCAL_ASSOC_LEFT, 3, 0);
   matcal_core_pushcfunction (core, matlib_div);
   matcal_core_setglobal (core, "/");
+
+  /* generic functions */
+
+  matcal_core_pushcfunction (core, matlib_max);
+  matcal_core_register_function (core, "max", 2);
+
+  matcal_core_pushcfunction (core, matlib_min);
+  matcal_core_register_function (core, "min", 2);
 }

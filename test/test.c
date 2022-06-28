@@ -205,8 +205,6 @@ matcal_test_closure_clone (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 21);
 }
 
-
-//"(3+4)*2/(1-5)"
 static void
 matcal_test_core_load (Fixture* fixture, gpointer shared)
 {
@@ -228,6 +226,15 @@ matcal_test_core_load (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_gettop (fixture->core) == 1);
   g_assert (matcal_core_tonumber_double (fixture->core, -1) == -2.5);
   matcal_core_pop (fixture->core, 1);
+
+  matcal_core_loadstring (fixture->core, "max (4, 7) + min (1, 7)", &tmp_err);
+  g_assert_no_error (tmp_err);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  matcal_core_call (fixture->core, 0, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 8);
+  matcal_core_pop (fixture->core, 1);
+
 }
 
 /*
