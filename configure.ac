@@ -19,7 +19,7 @@ AC_PREREQ([2.69])
 m4_define([p_VERSION], [0.1.0.0])
 m4_define([p_RELEASE], [alpha])
 
-AC_INIT([libmatcal], [p_VERSION], [libmatcal.bugs@hcktm.com], [libmatcal], [https://www.hcktm.com/libmatcal/])
+AC_INIT([libmatcal2], [p_VERSION], [libmatcal.bugs@hcktm.com], [libmatcal2], [https://github.com/MarcosHCK/libmatcal2/])
 AC_CONFIG_SRCDIR([src/libmatcal.h])
 AC_LANG([C])
 
@@ -67,6 +67,48 @@ AC_DEFINE_UNQUOTED([PACKAGE_VERSION_BUILD], ["$PACKAGE_VERSION_BUILD"], [Version
 
 AC_DEFINE([PACKAGE_RELEASE], ["p_RELEASE"], [Release tag])
 AC_SUBST([PACKAGE_RELEASE], [p_RELEASE])
+
+#
+# Custom build options
+#
+
+debugging="no"
+developer="no"
+
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug], [Enable debug object output @<:@default=no@:>@])],
+              [if test "x$enableval" != "xno"; then
+                debugging="yes"
+               fi])
+
+AM_CONDITIONAL([DEBUG], [test "x$debugging" = "xyes"])
+if test "x$debugging" = "xno"; then
+  AC_DEFINE([DEBUG], [0], [Debugging disabled])
+  AC_SUBST([DEBUG], [0])
+else
+  AC_DEFINE([DEBUG], [1], [Debugging enabled])
+  AC_SUBST([DEBUG], [1])
+fi
+
+AC_ARG_ENABLE([developer],
+              [AS_HELP_STRING([--enable-developer], [Enable developer features @<:@default=no@:>@])],
+              [if test "x$enableval" != "xno"; then
+                developer="yes"
+               fi])
+
+AM_CONDITIONAL([DEVELOPER], [test "x$developer" = "xyes"])
+if test "x$developer" = "xno"; then
+  AC_DEFINE([DEVELOPER], [0], [Developer feature disabled])
+  AC_SUBST([DEVELOPER], [0])
+else
+  AC_DEFINE([DEVELOPER], [1], [Developer feature enabled])
+  AC_SUBST([DEVELOPER], [1])
+fi
+
+AC_ARG_ENABLE([csharp-bindings],
+              [AS_HELP_STRING([--enable-csharp-bindings], [Enable C# bindings generation @<:@default=no@:>@])],
+              [AM_CONDITIONAL([CSBINDINGS], [test "x$enableval" != "xno"])
+                if test "x$enableval" != "xno"; then AC_SUBST(CSBINDINGS, [1]) fi])
 
 #
 # Checks for programs we'll
@@ -119,41 +161,11 @@ else
   AC_SUBST([DYNASM], [\${LUA}\ \${top_builddir}/build/dynasm/dynasm.lua])
 fi
 
-#
-# Custom build options
-#
-
-debugging="no"
-developer="no"
-
-AC_ARG_ENABLE([debug],
-              [AS_HELP_STRING([--enable-debug], [Enable debug object output @<:@default=no@:>@])],
-              [if test "x$enableval" != "xno"; then
-                debugging="yes"
-               fi])
-
-AM_CONDITIONAL([DEBUG], [test "x$debugging" = "xyes"])
-if test "x$debugging" = "xno"; then
-  AC_DEFINE([DEBUG], [0], [Debugging disabled])
-  AC_SUBST([DEBUG], [0])
-else
-  AC_DEFINE([DEBUG], [1], [Debugging enabled])
-  AC_SUBST([DEBUG], [1])
-fi
-
-AC_ARG_ENABLE([developer],
-              [AS_HELP_STRING([--enable-developer], [Enable developer features @<:@default=no@:>@])],
-              [if test "x$enableval" != "xno"; then
-                developer="yes"
-               fi])
-
-AM_CONDITIONAL([DEVELOPER], [test "x$developer" = "xyes"])
-if test "x$developer" = "xno"; then
-  AC_DEFINE([DEVELOPER], [0], [Developer feature disabled])
-  AC_SUBST([DEVELOPER], [0])
-else
-  AC_DEFINE([DEVELOPER], [1], [Developer feature enabled])
-  AC_SUBST([DEVELOPER], [1])
+if test $CSBINDINGS; then
+  AC_PATH_PROGS([GAPI_PARSER], [gapi3-parser gapi2-parser])
+  AC_PATH_PROGS([GAPI_FIXUP], [gapi3-fixup gapi2-fixup])
+  AC_PATH_PROGS([GAPI_CODEGEN], [gapi3-codegen gapi2-codegen])
+  PKG_CHECK_MODULES([GLIB_SHARP], [glib-sharp-3.0])
 fi
 
 #
@@ -201,6 +213,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_FILES([
 src/Makefile
+src/sharp/Makefile
 test/Makefile
 Makefile
 ])

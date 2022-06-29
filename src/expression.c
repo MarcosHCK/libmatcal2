@@ -76,6 +76,7 @@ enum
   prop_0,
   prop_rules,
   prop_infix,
+  prop_ast,
   prop_number,
 };
 
@@ -438,6 +439,9 @@ matcal_expression_class_get_property (GObject* pself, guint prop_id, GValue* val
   case prop_infix:
     g_value_set_boxed (value, matcal_expression_get_infix (self));
     break;
+  case prop_ast:
+    g_value_set_pointer (value, matcal_expression_get_ast (self));
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (pself, prop_id, pspec);
     break;
@@ -456,6 +460,7 @@ matcal_expression_class_init (MatcalExpressionClass* klass)
 
   properties [prop_rules] = g_param_spec_object ("rules", "rules", "rules", MATCAL_TYPE_RULES, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   properties [prop_infix] = g_param_spec_boxed ("infix", "infix", "infix", G_TYPE_BYTES, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+  properties [prop_ast] = g_param_spec_pointer ("ast", "ast", "ast", G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_properties (G_OBJECT_CLASS (klass), prop_number, properties);
 }
 
@@ -488,6 +493,29 @@ matcal_expression_new (MatcalRules* rules, GBytes* infix, GError** error)
 }
 
 /**
+ * matcal_expression_new_string: (constructor)
+ * @rules: a #MatcalRules instance.
+ * @infix: mathematical expression.
+ * @error: return location for #GError.
+ *
+ * Same as @matcal_expression_new but @infix
+ * is a C string (in UTF-8 of curse)
+ *
+ * Returns: (transfer full): a new #MatcalExpression instance.
+ */
+MatcalExpression*
+matcal_expression_new_string (MatcalRules* rules, const gchar* infix, GError** error)
+{
+  MatcalExpression* self = NULL;
+  GBytes* bytes = NULL;
+
+  bytes = g_bytes_new_static (infix, strlen (infix));
+  self = matcal_expression_new (rules, bytes, error);
+  _g_bytes_unref0 (bytes);
+return self;
+}
+
+/**
  * matcal_expression_get_infix:
  * Returns: (transfer none):
  */
@@ -496,6 +524,17 @@ matcal_expression_get_infix (MatcalExpression* expression)
 {
   g_return_val_if_fail (MATCAL_IS_EXPRESSION (expression), NULL);
 return expression->infix;
+}
+
+/**
+ * matcal_expression_get_ast:
+ * Returns: (transfer none):
+ */
+AstNode*
+matcal_expression_get_ast (MatcalExpression* expression)
+{
+  g_return_val_if_fail (MATCAL_IS_EXPRESSION (expression), NULL);
+return expression->ast;
 }
 
 /**

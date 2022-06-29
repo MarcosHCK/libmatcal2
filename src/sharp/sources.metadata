@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2021-2025 MarcosHCK
+
+This file is part of libmatcal.
+
+libmatcal is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+libmatcal is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with libmatcal. If not, see <http://www.gnu.org/licenses/>.
+
+Author: MarcosHCK
+-->
+<metadata>
+  <attr path="/api/namespace/*/*/parameters/parameter[@type='MatcalCFunction']" name="scope">call</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']" name="parent">GObject</attr>
+  <attr path="/api/namespace/object[@cname='MatcalExpression']" name="parent">GObject</attr>
+  <attr path="/api/namespace/object[@cname='MatcalRules']" name="parent">GObject</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_setglobal']" name="name">SetGlobal</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_getglobal']" name="name">GetGlobal</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_settop']" name="name">SetTop</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_gettop']" name="name">GetTop</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_isfunction']" name="name">IsFunction</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_isnil']" name="name">IsNil</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_isnumber']" name="name">IsNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_loadbytes']" name="name">LoadBytes</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_loadstring']" name="name">LoadString</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushcfunction']" name="name">PushClosure</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushclosure']" name="name">PushClosure</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushnil']" name="name">PushNil</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushnumber_double']" name="name">PushNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushnumber_string']" name="name">PushNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushnumber_uint']" name="name">PushNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushupvalue']" name="name">PushUpvalue</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_pushvalue']" name="name">PushValue</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_tonumber_double']" name="name">ToNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_tonumber_string']" name="name">ToNumber</attr>
+  <attr path="/api/namespace/object[@cname='MatcalCore']/method[@cname='matcal_core_tonumber_uint']" name="name">ToNumber</attr>
+</metadata>

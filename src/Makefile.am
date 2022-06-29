@@ -42,6 +42,10 @@ VOID=
 SUBDIRS=\
 	$(VOID)
 
+if CSBINDINGS
+SUBDIRS+=sharp/
+endif
+
 #
 # Binaries and libraries
 # - declare

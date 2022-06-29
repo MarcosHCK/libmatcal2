@@ -15,22 +15,7 @@
 # along with libmatcal. If not, see <http://www.gnu.org/licenses/>.
 #
 
-*.[ao]
-*.la
-*.lai
-*.lo
-*.Po
-*.Plo
-*.Tpo
+/nupkg/**
 
-libmatcal*.so*
-libmatlib*.so*
-libast*.so*
-libjit*.so*
-
-compiler_[^\.]*.c
-!compiler_[^\.]*.dasc.c
-
-*.gir
-*.typelib
-.dirstamp
+libmatcal.xml
+glue.c

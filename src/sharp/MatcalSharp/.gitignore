@@ -15,22 +15,9 @@
 # along with libmatcal. If not, see <http://www.gnu.org/licenses/>.
 #
 
-*.[ao]
-*.la
-*.lai
-*.lo
-*.Po
-*.Plo
-*.Tpo
+/Matcal/**
+/Matlib/**
+/obj/**
+/bin/**
 
-libmatcal*.so*
-libmatlib*.so*
-libast*.so*
-libjit*.so*
-
-compiler_[^\.]*.c
-!compiler_[^\.]*.dasc.c
-
-*.gir
-*.typelib
-.dirstamp
+!Matlib/Matlib.cs
