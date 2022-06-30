@@ -16,7 +16,7 @@
 #
 AC_PREREQ([2.69])
 
-m4_define([p_VERSION], [0.1.0.0])
+m4_define([p_VERSION], [0.5.0.0])
 m4_define([p_RELEASE], [alpha])
 
 AC_INIT([libmatcal2], [p_VERSION], [libmatcal.bugs@hcktm.com], [libmatcal2], [https://github.com/MarcosHCK/libmatcal2/])
@@ -214,6 +214,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 src/Makefile
 src/sharp/Makefile
+src/sharp/nupkg/MatcalSharp.nuspec
 test/Makefile
 Makefile
 ])

@@ -21,7 +21,7 @@ Author: MarcosHCK
 -->
 <gapi-parser-input>
   <api filename="libmatcal.xml">
-    <library name="libmatcal">
+    <library name="matcal">
       <namespace name="Matcal">
         <file>../core.h</file>
         <file>../expression.h</file>

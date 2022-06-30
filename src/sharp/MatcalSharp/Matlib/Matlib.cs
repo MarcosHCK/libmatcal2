@@ -26,7 +26,7 @@ namespace Matlib
 
   public static class Matlib
   {
-    [DllImport ("libmatlib", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport ("matlib", CallingConvention = CallingConvention.Cdecl)]
 		static extern void matlib_setup (IntPtr raw);
 
     public static void Setup (Core core)

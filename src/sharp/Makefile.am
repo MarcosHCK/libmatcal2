@@ -49,7 +49,7 @@ glue.c: libmatcal.xml
 		--glue-includes config.h \
 		--glue-includes libmatcal.h \
 		--glue-includes node.h \
-		--gluelib-name libmatcal_glue.dll \
+		--gluelib-name matcal_glue \
 		$(VOID)
 
 CLEANFILES+=\
