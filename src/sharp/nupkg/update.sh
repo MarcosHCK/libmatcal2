@@ -36,6 +36,12 @@ copy_runtime ()
   cp -f $srcdir/.libs/lib$name*.so* runtimes/$system-$arch/native/
 }
 
+cd ../MatcalSharp/
+dotnet build
+cd ../../../
+make
+cd src/sharp/nupkg/
+
 mkdir_s "lib"
 mkdir_s "runtimes"
 
