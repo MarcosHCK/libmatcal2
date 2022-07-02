@@ -17,6 +17,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="../../../README.md" target="Readme.md" />
     <file src="lib/**" target="lib"/>
     <file src="runtimes/**" target="runtimes" />
   </files>
