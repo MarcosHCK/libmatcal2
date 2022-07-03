@@ -68,6 +68,7 @@ pkginclude_HEADERS=\
 	number.h \
 	numberext.h \
 	object.h \
+	potency.h \
 	rules.h \
 	rulesext.h \
 	$(VOID)
@@ -116,6 +117,7 @@ libmatcal_la_LDFLAGS=\
 libmatlib_la_SOURCES=\
 	arithmetics.c \
 	generic.c \
+	potency.c \
 	setup.c \
 	$(VOID)
 libmatlib_la_CFLAGS=\

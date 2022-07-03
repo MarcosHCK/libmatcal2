@@ -15,23 +15,21 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATLIB__
-#define __LIBMATLIB__ 1
+#ifndef __MATLIB_POTENCY__
+#define __MATLIB_POTENCY__ 1
 #include <libmatcal.h>
-
-#include <arithmetics.h>
-#include <generic.h>
-#include <potency.h>
 
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-void
-matlib_setup (MatcalCore* core);
+int
+matlib_pow (MatcalCore* core);
+int
+matlib_log (MatcalCore* core);
 
 #if __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __LIBMATLIB__
+#endif // __MATLIB_POTENCY__

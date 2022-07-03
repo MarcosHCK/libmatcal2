@@ -42,6 +42,13 @@ matlib_setup (MatcalCore* core)
   matcal_core_pushcfunction (core, matlib_div);
   matcal_core_setglobal (core, "/");
 
+  matcal_rules_add_operator (rules, "[\\^]", MATCAL_ASSOC_RIGHT, 4, 0);
+  matcal_core_pushcfunction (core, matlib_pow);
+  matcal_core_setglobal (core, "^");
+
+  matcal_core_pushcfunction (core, matlib_log);
+  matcal_core_register_function (core, "log", 1);
+
   /* generic functions */
 
   matcal_core_pushcfunction (core, matlib_max);

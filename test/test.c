@@ -235,6 +235,21 @@ matcal_test_core_load (Fixture* fixture, gpointer shared)
   g_assert (matcal_core_tonumber_uint (fixture->core, -1) == 8);
   matcal_core_pop (fixture->core, 1);
 
+  matcal_core_loadstring (fixture->core, "2 ^ 3", &tmp_err);
+  g_assert_no_error (tmp_err);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  matcal_core_call (fixture->core, 0, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  g_assert (matcal_core_tonumber_double (fixture->core, -1) == 8);
+  matcal_core_pop (fixture->core, 1);
+
+  matcal_core_loadstring (fixture->core, "(1/2) ^ 2", &tmp_err);
+  g_assert_no_error (tmp_err);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  matcal_core_call (fixture->core, 0, 1);
+  g_assert (matcal_core_gettop (fixture->core) == 1);
+  g_assert (matcal_core_tonumber_double (fixture->core, -1) == 0.25);
+  matcal_core_pop (fixture->core, 1);
 }
 
 /*
