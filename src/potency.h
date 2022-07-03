@@ -23,10 +23,13 @@
 extern "C" {
 #endif // __cplusplus
 
-int
-matlib_pow (MatcalCore* core);
-int
-matlib_log (MatcalCore* core);
+int matlib_pow (MatcalCore* core);
+int matlib_log (MatcalCore* core);
+int matlib_log2 (MatcalCore* core);
+int matlib_log10 (MatcalCore* core);
+int matlib_exp (MatcalCore* core);
+int matlib_exp2 (MatcalCore* core);
+int matlib_exp10 (MatcalCore* core);
 
 #if __cplusplus
 }

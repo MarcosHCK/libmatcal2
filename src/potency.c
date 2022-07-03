@@ -201,39 +201,46 @@ matlib_pow (MatcalCore* core)
 return 1;
 }
 
-int
-matlib_log (MatcalCore* core)
-{
-  g_return_val_if_fail (MATCAL_IS_CORE (core), -1);
-  g_return_val_if_fail (matcal_core_isnumber (core, 0), -1);
-  MatcalNumber* number = NULL;
-  MatcalNumber* result = NULL;
-  MatcalNumberKind kind;
-
-  number = matcal_core_tonumber (core, 0);
-  kind = number->priv->kind;
-
-  mpfr_t y, x;
-  mpfr_inits (y, x, NULL);
-
-  switch (kind)
-  {
-  case MATCAL_NUMBER_KIND_INTEGER:
-    mpfr_set_z (x, number->priv->integer, 0);
-    break;
-  case MATCAL_NUMBER_KIND_RATIONAL:
-    mpfr_set_q (x, number->priv->rational, 0);
-    break;
-  case MATCAL_NUMBER_KIND_REAL:
-    mpfr_set_f (x, number->priv->real, 0);
-    break;
+#define MAKE_FUNC(func) \
+  int matlib_##func (MatcalCore* core) \
+  { \
+    g_return_val_if_fail (MATCAL_IS_CORE (core), -1); \
+    g_return_val_if_fail (matcal_core_isnumber (core, 0), -1); \
+    MatcalNumber* number = NULL; \
+    MatcalNumber* result = NULL; \
+    MatcalNumberKind kind; \
+ \
+    number = matcal_core_tonumber (core, 0); \
+    kind = number->priv->kind; \
+ \
+    mpfr_t y, x; \
+    mpfr_inits (y, x, NULL); \
+ \
+    switch (kind) \
+    { \
+    case MATCAL_NUMBER_KIND_INTEGER: \
+      mpfr_set_z (x, number->priv->integer, 0); \
+      break; \
+    case MATCAL_NUMBER_KIND_RATIONAL: \
+      mpfr_set_q (x, number->priv->rational, 0); \
+      break; \
+    case MATCAL_NUMBER_KIND_REAL: \
+      mpfr_set_f (x, number->priv->real, 0); \
+      break; \
+    } \
+ \
+    mpfr_##func (y, x, 0); \
+ \
+    matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_REAL); \
+    result = matcal_core_tonumber (core, -1); \
+    mpfr_get_f (result->priv->real, y, 0); \
+    mpfr_clears (x, y, NULL); \
+  return 1; \
   }
 
-  mpfr_log (y, x, 0);
-
-  matcal_core_pushnumber (core, MATCAL_NUMBER_KIND_REAL);
-  result = matcal_core_tonumber (core, -1);
-  mpfr_get_f (result->priv->real, y, 0);
-  mpfr_clears (x, y, NULL);
-return 1;
-}
+MAKE_FUNC (log);
+MAKE_FUNC (log2);
+MAKE_FUNC (log10);
+MAKE_FUNC (exp);
+MAKE_FUNC (exp2);
+MAKE_FUNC (exp10);

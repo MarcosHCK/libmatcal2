@@ -25,7 +25,6 @@
   { \
     g_return_val_if_fail (MATCAL_IS_CORE (core), -1); \
     g_return_val_if_fail (matcal_core_isnumber (core, 0), -1); \
-    g_return_val_if_fail (matcal_core_isnumber (core, 1), -1); \
     MatcalNumber* number = NULL; \
     MatcalNumber* result = NULL; \
     MatcalNumberKind kind; \

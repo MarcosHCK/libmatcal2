@@ -48,6 +48,16 @@ matlib_setup (MatcalCore* core)
 
   matcal_core_pushcfunction (core, matlib_log);
   matcal_core_register_function (core, "log", 1);
+  matcal_core_pushcfunction (core, matlib_log2);
+  matcal_core_register_function (core, "log2", 1);
+  matcal_core_pushcfunction (core, matlib_log10);
+  matcal_core_register_function (core, "log10", 1);
+  matcal_core_pushcfunction (core, matlib_exp);
+  matcal_core_register_function (core, "exp", 1);
+  matcal_core_pushcfunction (core, matlib_exp2);
+  matcal_core_register_function (core, "exp2", 1);
+  matcal_core_pushcfunction (core, matlib_exp10);
+  matcal_core_register_function (core, "exp10", 1);
 
   matcal_core_pushcfunction (core, matlib_sin);
   matcal_core_register_function (core, "sin", 1);
