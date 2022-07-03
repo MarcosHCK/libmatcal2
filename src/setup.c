@@ -49,6 +49,31 @@ matlib_setup (MatcalCore* core)
   matcal_core_pushcfunction (core, matlib_log);
   matcal_core_register_function (core, "log", 1);
 
+  matcal_core_pushcfunction (core, matlib_sin);
+  matcal_core_register_function (core, "sin", 1);
+  matcal_core_pushcfunction (core, matlib_cos);
+  matcal_core_register_function (core, "cos", 1);
+  matcal_core_pushcfunction (core, matlib_tan);
+  matcal_core_register_function (core, "tan", 1);
+  matcal_core_pushcfunction (core, matlib_asin);
+  matcal_core_register_function (core, "asin", 1);
+  matcal_core_pushcfunction (core, matlib_acos);
+  matcal_core_register_function (core, "acos", 1);
+  matcal_core_pushcfunction (core, matlib_atan);
+  matcal_core_register_function (core, "atan", 1);
+  matcal_core_pushcfunction (core, matlib_sinh);
+  matcal_core_register_function (core, "sinh", 1);
+  matcal_core_pushcfunction (core, matlib_cosh);
+  matcal_core_register_function (core, "cosh", 1);
+  matcal_core_pushcfunction (core, matlib_tanh);
+  matcal_core_register_function (core, "tanh", 1);
+  matcal_core_pushcfunction (core, matlib_asinh);
+  matcal_core_register_function (core, "sinh", 1);
+  matcal_core_pushcfunction (core, matlib_acosh);
+  matcal_core_register_function (core, "cosh", 1);
+  matcal_core_pushcfunction (core, matlib_atanh);
+  matcal_core_register_function (core, "tanh", 1);
+
   /* generic functions */
 
   matcal_core_pushcfunction (core, matlib_max);

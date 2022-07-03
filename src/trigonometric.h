@@ -15,24 +15,29 @@
  * along with libmatcal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef __LIBMATLIB__
-#define __LIBMATLIB__ 1
+#ifndef __MATLIB_TRIGONOMETRIC__
+#define __MATLIB_TRIGONOMETRIC__ 1
 #include <libmatcal.h>
-
-#include <arithmetics.h>
-#include <generic.h>
-#include <potency.h>
-#include <trigonometric.h>
 
 #if __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-void
-matlib_setup (MatcalCore* core);
+int matlib_sin (MatcalCore* core);
+int matlib_cos (MatcalCore* core);
+int matlib_tan (MatcalCore* core);
+int matlib_asin (MatcalCore* core);
+int matlib_acos (MatcalCore* core);
+int matlib_atan (MatcalCore* core);
+int matlib_sinh (MatcalCore* core);
+int matlib_cosh (MatcalCore* core);
+int matlib_tanh (MatcalCore* core);
+int matlib_asinh (MatcalCore* core);
+int matlib_acosh (MatcalCore* core);
+int matlib_atanh (MatcalCore* core);
 
 #if __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __LIBMATLIB__
+#endif // __MATLIB_TRIGONOMETRIC__

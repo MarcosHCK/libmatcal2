@@ -71,6 +71,7 @@ pkginclude_HEADERS=\
 	potency.h \
 	rules.h \
 	rulesext.h \
+	trigonometric.h \
 	$(VOID)
 
 noinst_LTLIBRARIES=\
@@ -119,6 +120,7 @@ libmatlib_la_SOURCES=\
 	generic.c \
 	potency.c \
 	setup.c \
+	trigonometric.c \
 	$(VOID)
 libmatlib_la_CFLAGS=\
 	$(GIO_CFLAGS) \
