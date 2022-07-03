@@ -57,10 +57,62 @@
   - `Matcal`.`AstData`.`Type` es el tipo del *token* tal cual fue clasificado por las reglas usadas en el análisis de la expresión (abstraído claro) (ie: en el ejemplo anterior, "*sin*" sería de tipo `Matcal`.`AstSymbolType`.`Function` al igual que "*+*" o "*\**", en cambio, "*8*" sería de tipo `Matcal`.`AstSymbolType`.`Constant`)
 
 # Objetos internos
-- `Matcal`.`Object` es el núcleo alrededor del cual se construyen todos los tipos de la máquina virtual implementada en `Matcal`.`Core` (es una clase abstracta de la que se derivan las tipos representables en la stack). Internamente representa una list doblemente enlazada de objetos `Matcal`.`Object`. La stack en sí se sirve de esta representación para construirse.
+- `Matcal`.`Object` es el núcleo alrededor del cual se construyen todos los tipos de la máquina virtual implementada en `Matcal`.`Core` (es una clase abstracta de la que se derivan las tipos representables en la stack). Internamente representa una lista doblemente enlazada de objetos `Matcal`.`Object`. La stack en sí se sirve de esta representación para construirse.
   - `Matcal`.`Nil` representa un valor nulo
   - `Matcal`.`Closure` representa una función de primera clase que puede ser invocada usando los valores en la stack
   - `Matcal`.`Number` representa una valor numérico; básicamente la librería esta construida alrededor de este tipo. Almacena valores reales (enteros, fraccionarios y reales a su tiempo) de precisión infinita, eso es, el número puede tener infinitos lugares decimales, o representar un entero lo grande que necesite, sin perder precisión. Para minimizar el espacio requerido para almacenar una valor, este objeto guarda los números como enteros, fraccionarios o reales según se necesite, y transforma su valor para acomodarse a las operaciones matemáticas en las que se utilizan
+
+# Análisis paso a paso
+- Valida la entrada (debe estar codificada en UTF-8)
+- Rompe la entrada en *tokens* reconocibles (*tokenizar*)
+  - Escanea la string de entrada usando expresiones regulares buscando *tokens*: usando una lista de expresiones regulares que reconocen *tokens* específicos, compara cada entrado con cada expresión regular de forma sucesiva. Las entradas (mejor dicho, las partes de ella) que sean reconocibles por estas se agregan al vector de salida, mientras que las que no se reconozcan se siguen procesando. Al final, toda la entrada obtiene una coincidencia con alguna expresión regular (está garantizado porque la ultima expresión reconoce cualquier entrada); el vector resultante consta de los *tokens* en el orden en que aparacen en la entrada
+- Usando el algoritmo **Shunting-yard** construye el árbol sintáctico
+
+# Compilador
+- El compilador usa [DynASM](http://luajit.org/dynasm.html), un generador de JITs, para construir un pequeño programa (o no, depende de la expresión) en código nativo de la plataforma en la que se ejecuta (por ahora solo esta soportada la arquitectura **x86_64** para ambos *Windows* y *Unix-like*) cuando la expresión se invoca a traves de la API de `Matcal`.`Core`
+  - Recorre el árbol para anotar las constantes, funciones y variables que están presentes. Las constantes y funciones se agregan al código generado
+    ```c
+      /* ejemplo del bloque de datos  */
+      /* para la entrada `4 + 5`      */
+    data1:
+      .asciz "+"
+    data2:
+      .asciz "4"
+    data3:
+      .asciz "5"
+     ```
+  - Recorre nuevamente el árbol, pero esta vez genera el código que ejecuta la expresión. Las variables se toman por orden de aparición (en **8 * y + x** la función quedaría **f(y,x)**); las funciones se toman del registro global (en el momento que el código se ejecuta) y las constantes de la cadena literal almacenada anteriormente.
+    ```c
+      /* ejemplo del bloque de código   */
+      /* para la entrada `f(x) = 4 + x` */
+      /* arquitectura: x86_64           */
+      /* sistema operativo: linux       */
+      /* convenio de llamadas: fastcall */
+    main:
+      sub rsp, 8      // Prepara la stack para una variable local
+      mov [rsp], rdi  // Copia el argumento `core` en la stack
+
+      mov rdi, [rsp]  // Agrega a la stack de `core` la función '+'
+      lea rsi, data1  // Esto es una etiqueta en el bloque de datos
+      call Matcal.Core.GetGlobal
+
+      mov rdi, [rsp]  // Agrega a la stack de `core` el número '5'
+      lea rsi, data2  // Esto es una etiqueta en el bloque de datos
+      call Matcal.Core.PushNumber
+
+      mov rdi, [rsp]  // Agrega una copia del valor de 'x'
+      lea rsi, 0      // El índices de la variable es 0
+      call Matcal.Core.PushValue
+
+      mov rdi, [rsp]
+      mov rsi, 2      // Ejecuta la función '+' con dos argumentos
+      mov rdx, 1      // Retorna solo un valor
+      call Matcal.Core.Call
+
+      add rsp, 8      // Restablece la stack
+      mov rax, 1      // Retorna 1
+      ret
+    ```
 
 # Librería estándar
 Internamente `Matcal` no implementa ninguna operación matemática, por lo que una librería auxiliar, `Matlib` implementa dichas operaciones. Por ahora tiene los operadores: "+" (suma usual), "-" (sustracción usual), "*" (multiplicación usual) y "/" (división usual). Ademas implementa algunas funciones matemáticas comunes
