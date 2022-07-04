@@ -57,6 +57,7 @@ matcal_number_class_finalize (MatcalObject* pself)
 {
   MatcalNumber* self = MATCAL_NUMBER (pself);
   MatcalNumberPrivate* priv = self->priv;
+
   switch (priv->kind)
   {
   case MATCAL_NUMBER_KIND_INTEGER:
@@ -84,7 +85,7 @@ static void
 matcal_number_init (MatcalNumber* self)
 {
   self->priv = matcal_number_get_instance_private (self);
-
+/*
   static gsize gmp_once = 0;
   if (g_once_init_enter (&gmp_once))
     {
@@ -97,6 +98,7 @@ matcal_number_init (MatcalNumber* self)
        g_free);
       g_once_init_leave (&gmp_once, TRUE);
     }
+*/
 }
 
 /* public API */

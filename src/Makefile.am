@@ -79,6 +79,10 @@ noinst_LTLIBRARIES=\
 	libjit.la \
 	$(VOID)
 
+noinst_PROGRAMS=\
+	matcal \
+	$(VOID)
+
 #
 # Binaries and libraries
 # - sources
@@ -196,6 +200,22 @@ libjit_la_LIBADD=\
 	libast.la \
 	$(VOID)
 libjit_la_LDFLAGS=\
+	$(VOID)
+
+matcal_SOURCES=\
+	matcal.c \
+	$(VOID)
+matcal_CFLAGS=\
+	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(GOBJECT_CFLAGS) \
+	$(VOID)
+matcal_LDADD=\
+	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
+	$(GOBJECT_LIBS) \
+	libmatcal.la \
+	libmatlib.la \
 	$(VOID)
 
 #

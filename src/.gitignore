@@ -27,6 +27,7 @@ libmatcal*.so*
 libmatlib*.so*
 libast*.so*
 libjit*.so*
+matcal
 
 compiler_[^\.]*.c
 !compiler_[^\.]*.dasc.c

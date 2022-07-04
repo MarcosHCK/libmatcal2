@@ -86,26 +86,28 @@ scan_tree (AstNode* node, AstStat* q)
   {
   case AST_SYMBOL_CONSTANT:
   case AST_SYMBOL_FUNCTION:
-    {
-      gsize length = strlen (name) + 1;
-      dasm_State** Dst = q->Dst;
-      guint idx = q->n_constants++;
+    if (!g_hash_table_contains (q->constants, name))
+      {
+        gsize length = strlen (name) + 1;
+        dasm_State** Dst = q->Dst;
+        guint idx = q->n_constants++;
 
-      dasm_growpc (Dst, q->pcs);
+        dasm_growpc (Dst, q->pcs);
 #if __DASC__
-      |=>idx:
+        |=>idx:
 #endif // __DASC__
-      gpointer pidx = GINT_TO_POINTER (idx);
-      g_hash_table_insert (q->constants, name, pidx);
-      dumpbuffer (Dst, name, length);
-    }
+        gpointer pidx = GINT_TO_POINTER (idx);
+        g_hash_table_insert (q->constants, name, pidx);
+        dumpbuffer (Dst, name, length);
+      }
     break;
   case AST_SYMBOL_VARIABLE:
-    {
-      guint idx = q->n_variables++;
-      gpointer pidx = GINT_TO_POINTER (idx);
-      g_hash_table_insert (q->variables, name, pidx);
-    }
+    if (!g_hash_table_contains (q->variables, name))
+      {
+        guint idx = q->n_variables++;
+        gpointer pidx = GINT_TO_POINTER (idx);
+        g_hash_table_insert (q->variables, name, pidx);
+      }
     break;
   }
 return FALSE;
